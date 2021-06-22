@@ -102,14 +102,14 @@ I am past the 70% completion mark already.  I estimate at most more 2-weeks unti
 
 I won first place in the recent CyberPunk Contes that included a mini-game.  In the mini-game, I had to disable access to areas, disable platforms, keep track of how many times a user did something.  I exclusively used the Builder and the provided smart items to make my scene.  In doing so I am very familiar with the Builder and smart item current limitations.
 
-[https://decentraland.org/blog/announ	cements/cyberpunk-2021-meet-the-winners/] (https://decentraland.org/blog/announcements/cyberpunk-2021-meet-the-winners/)
+[https://decentraland.org/blog/announcements/cyberpunk-2021-meet-the-winners/] (https://decentraland.org/blog/announcements/cyberpunk-2021-meet-the-winners/)
 View it in the scene pool here [https://builder.decentraland.org/view/pool/2b1522a0-3768-426f-990b-9cd716d9cb20] (https://builder.decentraland.org/view/pool/2b1522a0-3768-426f-990b-9cd716d9cb20)
 
 I have made improvements to existing smart items.  You can see my pull request to fix a bug found in the CyberPunk image cube item.
 https://github.com/decentraland/smart-items/pull/27  
 
 Another contest submission for the Voxter Contest involved a smart asset they provided.  You can find my submission here:
-[https://builder.decentraland.org/view/pool/a1890011-77d7-415c-aeb2-452e3a186391?realm=localhost-stub] (https://builder.decentraland.org/view/pool/a1890011-77d7-415c-aeb2-452e3a186391?realm=localhost-stub). Again I used the Builder and but this time also the SDK to enhance the Voxter smart item given to the contestants improving its experience and features in the Builder.  Enhancements can be found here:
+[https://builder.decentraland.org/view/pool/a1890011-77d7-415c-aeb2-452e3a186391?realm=localhost-stub](https://builder.decentraland.org/view/pool/a1890011-77d7-415c-aeb2-452e3a186391?realm=localhost-stub). Again I used the Builder and but this time also the SDK to enhance the Voxter smart item given to the contestants improving its experience and features in the Builder.  Enhancements can be found here:
 [https://github.com/pabloes/voxters/pull/2] (https://github.com/pabloes/voxters/pull/2)
 
 
