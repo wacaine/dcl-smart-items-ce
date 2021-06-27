@@ -32,7 +32,7 @@ Visit the Discord channel
 
 | Action                               | Thumbnail                                           | Description                                                                                                                      |
 | ------------------------------------ | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| [Face Player](#Face Player)          | <img src="screenshots/builder.jpg" width="200">     | Take an exported Builder scene and understand how to edit its code to add more functionality.                                    |
+| [Face Player](#Face-Player)          | <img src="screenshots/builder.jpg" width="200">     | Take an exported Builder scene and understand how to edit its code to add more functionality.                                    |
 |                                      | <img src="screenshots/hypnowheels.png" width="200"> | A walkthrough that starts from scratch and covers most of the main ideas to understand: Entities, Components, Systems, and more. |
 
 
