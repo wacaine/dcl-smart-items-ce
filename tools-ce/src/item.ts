@@ -35,14 +35,8 @@ type AnimationValues = {
   animation?: string
 }
 
-type SyncEntity = {
-  entityName: string
-  transform: {
-    position: [number, number, number]
-    rotation: [number, number, number, number]
-    scale: [number, number, number]
-  }
-  tween?: { //must make 1 per type. move,scale,rotate
+type SyncEntityTween = 
+  { //must make 1 per type. move,scale,rotate
     transition: number
     type: TweenType
     curve: CurveType
@@ -63,6 +57,7 @@ type SyncEntity = {
     enabled: boolean
     numberOfSegments: number//for PathData and RotationData
     turnToFaceNext: boolean//for PathData and RotationData
+    pathOriginIndex: number//for PathData and RotationData
     //TODO MUST ADD CURRENT PARENT?!?!
     //controlMode: string  enabled will handle it???? or must emit this removal?
     //tweenControlMove: boolean  enabled will handle it?
@@ -74,6 +69,17 @@ type SyncEntity = {
     lockZ:boolean,//for PathData and RotationData
     lockW:boolean,//for PathData and RotationData
   }
+
+type SyncEntity = {
+  entityName: string
+  transform: {
+    position: [number, number, number]
+    rotation: [number, number, number, number]
+    scale: [number, number, number]
+  }
+  tweenMove?: SyncEntityTween
+  tweenRotate?: SyncEntityTween
+  tweenScale?: SyncEntityTween
   anim?: {
     type: AnimType
     name: string
@@ -1091,61 +1097,70 @@ if(props.clickable){
     // sync initial values
     channel.request<SyncEntity[]>('syncEntities', (syncEntities) => {
       for (const syncEntity of syncEntities) {
-        const { entityName, transform, tween, anim } = syncEntity
+        const { entityName, transform, tweenMove, tweenRotate, tweenScale, anim } = syncEntity
         const entity = getEntityByName(entityName)
         if (entity && entity !== undefined) {
           const original = entity.getComponent(Transform)
           syncv(original.position, transform.position)
           syncq(original.rotation, transform.rotation)
           syncv(original.scale, transform.scale)
-          if (tween) {
-            log("got sync for " + entityName + " " + tween.type)
-            //CREATE RIGHT TYPE
-            let tweenable = null;
-            switch(tween.type){
-              case 'move': 
-                tweenable = new TweenableMove({
-                  ...tween,
-                  channel,
-                })
-                break;
-              case 'follow-path': {
-                tweenable = new TweenableMove({
-                  ...tween,
-                  channel,
-                })
-                entity.addComponentOrReplace(tweenable)
-                //TODO pass current origin/target position?
-                entity.addComponentOrReplace(new PathData(tween.curvePoints,tween.curveNBPoints,tween.curveCloseLoop,tween.origin))
-                if(tween.turnToFaceNext){
-                  entity.addComponentOrReplace(new RotateData(tween.originQ,tween.lockX,tween.lockY,tween.lockZ,tween.lockW))
+          let tweenArray:SyncEntityTween[] = new Array();
+          if( tweenMove && tweenMove !== undefined ) tweenArray.push(tweenMove)
+          if( tweenRotate && tweenRotate !== undefined ) tweenArray.push(tweenRotate)
+          if( tweenScale && tweenScale !== undefined ) tweenArray.push(tweenScale)
+          for( const p in tweenArray){
+            const tween = tweenArray[p]
+            if (tween) {
+              log("got sync for " + entityName + " " + tween.type)
+              //CREATE RIGHT TYPE
+              let tweenable = null;
+              switch(tween.type){
+                case 'move': 
+                  tweenable = new TweenableMove({
+                    ...tween,
+                    channel,
+                  })
+                  break;
+                case 'follow-path': {
+                  tweenable = new TweenableMove({
+                    ...tween,
+                    channel,
+                  })
+                  entity.addComponentOrReplace(tweenable)
+                  //TODO pass current origin/target position?
+                  let pathData:PathData = new PathData(tween.curvePoints,tween.curveNBPoints,tween.curveCloseLoop,tween.origin)
+                  pathData.setPathPosition(tween.pathOriginIndex);
+                  entity.addComponentOrReplace(pathData)
+                  if(tween.turnToFaceNext){
+                    entity.addComponentOrReplace(new RotateData(tween.originQ,tween.lockX,tween.lockY,tween.lockZ,tween.lockW))
+                  }
+                  break;
                 }
-                break;
+                case 'scale': {
+                  tweenable = new TweenableScale({
+                    ...tween,
+                    channel,
+                  })
+                  break;
+                }
+                case 'rotate-q':
+                case 'rotate': {
+                  tweenable = new TweenableRotate({
+                    ...tween,
+                    channel,
+                  })
+                  break;
+                }
               }
-              case 'scale': {
-                tweenable = new TweenableScale({
+              /*
+              tweenable = new Tweenable({
                   ...tween,
                   channel,
                 })
-                break;
-              }
-              case 'rotate-q':
-              case 'rotate': {
-                tweenable = new TweenableRotate({
-                  ...tween,
-                  channel,
-                })
-                break;
-              }
+                */
+            //TODO sync PathData + RotationData
+              entity.addComponentOrReplace(tweenable) //TODO either need to move the followCurve into tween OR sync PathData + RotateData objects too
             }
-            /*
-            tweenable = new Tweenable({
-                ...tween,
-                channel,
-              })
-              */
-          //TODO sync PathData + RotationData
-            entity.addComponentOrReplace(tweenable) //TODO either need to move the followCurve into tween OR sync PathData + RotateData objects too
           }
           if (anim) {
             const animated = new Animated({
@@ -1215,17 +1230,23 @@ if(props.clickable){
         if (entity.hasComponent(TweenableMove)) {
           const { channel: _, ...tween } = entity.getComponent(TweenableMove)
           log("sync check found for TweenableMove " + " " + tween.type + " "  + entity.name  );//+ " " + tween.)
-          syncEntity.tween = tween //sets all tween data
+          //stuff any extra things into the tween before settings it
+          if(entity.hasComponent(PathData)){
+            const pathData = entity.getComponent(PathData)
+            tween.pathOriginIndex = pathData.origin
+          }
+          syncEntity.tweenMove = tween //sets all tween data
+          
         }
         if (entity.hasComponent(TweenableRotate)) {
           const { channel: _, ...tween } = entity.getComponent(TweenableRotate)
           log("sync check found for TweenableRotate" + " " + tween.type + " "  + entity.name  );//+ " " + tween.)
-          syncEntity.tween = tween //sets all tween data
+          syncEntity.tweenRotate = tween //sets all tween data
         }
         if (entity.hasComponent(TweenableScale)) {
           const { channel: _, ...tween } = entity.getComponent(TweenableScale)
           log("sync check found for TweenableScale" + " " + tween.type + " "  + entity.name  );//+ " " + tween.)
-          syncEntity.tween = tween //sets all tween data
+          syncEntity.tweenScale = tween //sets all tween data
         }
         if (entity.hasComponent(Animated)) {
           const { channel: _, ...anim } = entity.getComponent(Animated)

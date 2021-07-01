@@ -86,6 +86,11 @@ export class PathData {
       this.start = this.origin;
     }
   }
+  setPathPosition(originIdx:number){
+    log("setPathPosition " + originIdx)
+    this.origin = originIdx;
+    this.target = this.origin+1;
+  }
 }
 
 // Custom component to store rotational lerp data
@@ -144,6 +149,7 @@ export class TweenableVO {
   lockY:boolean//for PathData and RotationData
   lockZ:boolean//for PathData and RotationData
   lockW:boolean//for PathData and RotationData
+  pathOriginIndex: number//need to persit - for PathData and RotationData
 
   constructor(args: {
     type: TweenType
