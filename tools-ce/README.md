@@ -37,7 +37,7 @@ If something doesn’t work, please [file an issue](https://github.com/wacaine/d
 
 [Read how to import to items builder](https://docs.decentraland.org/builder/import-items/)
 
-## Builder Buggyness
+## Builder Bugginess
 
 Builder is running SDK 6.6.3 (not the latest).  The latest SDK is 6.6.5.  [More on that here](https://governance.decentraland.org/en/proposal/?id=72f3d560-d1f4-11eb-9861-ebb8fcfd58d2).   There are a few things Builder does not do right like rotation.  While I try to get workarounds for issues like these please do not think its broke.  When deployed on the latest SDK it works correctly
 
