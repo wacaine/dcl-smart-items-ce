@@ -8,18 +8,18 @@ Here you can find feature decriptions here. Here you'll find links to:
 
 - [Face Player](#Face-Player) 
 - [Face Item](#Face-Item) 
+- [Move to Player](#Move-to-Player) 
+- [Move to Item](#Move-to-Item) 
 
 TODO
 
-- [Move to Player](#Move-to-Player) 
-- [Move to Item](#Move-to-Item) 
 Follow Path of Items
 Scene Add/Remove
 Attach To Item
 Dettach From Item
 Motion Control
 
-##Thank You!
+## Thank You!
 
 Thank you to everyone who voted!  The enhancements to this smart item were made possible by all those who voted for this grant.    [Grant Here](https://governance.decentraland.org/en/proposal/?id=ba798f30-d382-11eb-b705-3db38bad850a)
 
