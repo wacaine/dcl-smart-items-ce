@@ -10,14 +10,12 @@ Here you can find feature decriptions here. Here you'll find links to:
 - [Face Item](#Face-Item) 
 - [Move to Player](#Move-to-Player) 
 - [Move to Item](#Move-to-Item) 
+- [Follow Path of Items](#Follow-Path-of-Items) 
+- [Scene Add/Remove](#Scene-Add/Remove) 
+- [Attach To Item](#Attach-To-Item) 
+- [Detach From Item](#Detach-To-Item) 
+- [Motion Control](#Motion-Control) 
 
-TODO
-
-Follow Path of Items
-Scene Add/Remove
-Attach To Item
-Dettach From Item
-Motion Control
 
 ## Thank You!
 
@@ -128,3 +126,23 @@ The target item will move towards the player at a configurable speed for how fas
 | Curve type                           | Curve type is the rate at which the item rotates over time.  For example start off slow and speed up.  TODO LINK_TO_CURVE_TYPE_LIST |
 | Speed                                | Overall speed for which the item rotates |
 | When transition finished             | Select a whole set of new actions when this action completes |
+
+### Follow Path of Items
+
+The target item will follow a path of defined items. This is like move to item however you list more than one item. It will also not follow the path strictly but more of a curved path AND rotate the object-oriented facing forward along the path. 
+
+### Scene Add/Remove
+
+Action will let you remove/add an object. Not the most elegant way to handle the user experience object/movement but has its uses. One is removed objects do not contribute to scene limitations and boost scene performance.
+
+### Attach To Item
+
+Will attach 1 item to another giving the attached item the position, rotation, scale of the target/host object. This is very useful to move items in one group instead of individually.
+
+### Detach From Item
+
+Will detach 1 item to another giving the attached item the position, rotation, scale of the target/host object. This is very useful to move items in one group instead of individually. 
+
+### Motion Control
+
+Allows a player to pause, stop, resume an action
