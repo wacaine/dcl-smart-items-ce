@@ -9,7 +9,7 @@
           "id": "toolboxVersion",
           "label": "Version",
           "type": "text",
-          "default": "1.1.0.alpha"
+          "default": "1.1.0-alpha"
         },
         {
           "id": "debugLoggingEnabled",

@@ -160,7 +160,7 @@ export default class Tools implements IScript<Props> {
     return this.container
   }
   init() {
-    const version = "1.0.0.alpha"
+    const version = "1.1.0.alpha"
     log("Toolbox-CE version " + version + " initializing... " )
     //tweenSystem = new TweenSystem()
     //engine.addSystem(this.tweenSystem)
