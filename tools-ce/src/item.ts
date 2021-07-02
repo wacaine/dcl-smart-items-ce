@@ -465,6 +465,9 @@ if(props.clickable){
 
         //drops position well
         transformChild.position = getEntityWorldPosition(entityToDetach)
+ 
+        this.adjustForSceneRotation(transformChild.position,entityToDetach)
+
         transformChild.scale = transformChild.scale.multiply(transformParent.scale)
         
         entityToDetach.setParent(tempLastHost)

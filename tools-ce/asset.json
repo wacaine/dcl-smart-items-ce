@@ -58,12 +58,6 @@
           "default": 0
         },
         {
-          "id": "preserveScale",
-          "label": "Preserve Scale",
-          "type": "boolean",
-          "default": true
-        },
-        {
           "id": "onComplete",
           "label": "When transition finished",
           "type": "actions"
