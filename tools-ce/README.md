@@ -11,7 +11,7 @@ Here you can find feature decriptions here. Here you'll find links to:
 - [Move to Player](#Move-to-Player) 
 - [Move to Item](#Move-to-Item) 
 - [Follow Path of Items](#Follow-Path-of-Items) 
-- [Scene Add/Remove](#Scene-Add/Remove) 
+- [Scene Add/Remove](#Scene-AddRemove) 
 - [Attach To Item](#Attach-To-Item) 
 - [Detach From Item](#Detach-To-Item) 
 - [Motion Control](#Motion-Control) 
