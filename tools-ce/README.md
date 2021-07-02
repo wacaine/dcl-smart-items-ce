@@ -29,7 +29,7 @@ If something doesn’t work, please [file an issue](https://github.com/wacaine/d
 
 ## Latest Release
 
-[Latest Release Here] (https://github.com/wacaine/dcl-smart-items-ce/releases)
+[Latest Release Here](https://github.com/wacaine/dcl-smart-items-ce/releases)
 
 ## Builder Buggyness
 
