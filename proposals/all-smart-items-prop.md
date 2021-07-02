@@ -114,7 +114,7 @@ https://github.com/decentraland/smart-items/pull/27
 
 ### Time to Complete
 
-I estimate roughly 8-weeks until completion from the time the proposal is accepted, there are a lot of items to go through, 254 to be exact (and sadly this is not my full-time job...yet! :).  Should the funding be approved I will start working and make it available as outlined in the deliverables above.
+I estimate roughly 10-weeks until completion from the time the proposal is accepted, there are a lot of items to go through, 254 to be exact (and sadly this is not my full-time job...yet! :).  Should the funding be approved I will start working and make it available as outlined in the deliverables above.
 
 ### Status / Progress Communication
 
@@ -126,10 +126,13 @@ The status will be communicated twice a month through this grant forum.   See "D
 
 ### Milestones
 
-Week 1-10 - Make smart items more scene efficient + Add more user feedback (Burn rate of ~25 a week)
-Week 1-2 - Trigger Types + Toolbox Bounce Action
-Week 2-3 - Counter types + Display Text types
-Week 4-6 - Making a Game Demo Scene using Triggers and Counters.  A smattering of other updated items
+
+* Week 1-10 - Make smart items more scene efficient + Add more user feedback (Burn rate of ~25 a week)
+* Week 1-2 - Trigger Types + Toolbox Bounce Action
+* Week 2-3 - Counter types + Display Text types
+* Week 4-6 - Making a Game Demo Scene using Triggers and Counters.  A smattering of other updated items
+
+Week deliverables tentative but give general delivery order*
 
 ### Deliverables
 
