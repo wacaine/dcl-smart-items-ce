@@ -1,7 +1,7 @@
 # Smart Item: Toolbox CE
 
 
-<img src="../docs/toolbox-ce/screenshots/toolbox-view.png" width="150">
+<img src="../docs/tools-ce/screenshots/toolbox-view.png" width="150">
 
 Here you can find feature decriptions here. Here you'll find links to:
 
@@ -56,7 +56,7 @@ Visit the Discord channel
 
 The target item will rotate towards the player at a configurable speed for how fast it rotates and stops when facing the player.  The position the item rotates is the position the player was at time of triggering, not where the player moves to afterwards.
 
-<img src="docs/screenshots/face-player.png" width="150">
+<img src="../docs/tools-ce/screenshots/face-player.png" width="150">
 
 
 | Parameter                            | Description                                                                                                                      |
@@ -75,7 +75,7 @@ The target item will rotate towards the player at a configurable speed for how f
 
 The target item will rotate towards the item of interest at a configurable speed for how fast it rotates and stops when facing the item.  The position the item rotates is the position the item was at time of triggering, not where the item of interest moves to afterwards.
 
-<img src="docs/screenshots/face-item.png" width="150">
+<img src="../docs/tools-ce/screenshots/face-item.png" width="150">
 
 | Parameter                            | Description                                                                                                                      |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -94,7 +94,7 @@ The target item will rotate towards the item of interest at a configurable speed
 
 The target item will move towards the target item at a configurable speed for how fast it moves and stops when at the target item.  The position the item moves to is the position the item was at time of triggering, not where the target item moves to afterwards.
 
-<img src="docs/screenshots/move-to-item.png" width="150">
+<img src="../docs/tools-ce/screenshots/move-to-item.png" width="150">
 
 | Parameter                            | Description                                                                                                                      |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -114,7 +114,7 @@ The target item will move towards the target item at a configurable speed for ho
 
 The target item will move towards the player at a configurable speed for how fast it move and stops when arrived at the player.  The position the item moves is the position the player was at time of triggering, not where the player moves to afterwards.
 
-<img src="docs/screenshots/move-to-player.png" width="150">
+<img src="../docs/tools-ce/screenshots/move-to-player.png" width="150">
 
 
 | Parameter                            | Description                                                                                                                      |
