@@ -27,6 +27,10 @@ If you can think of an example that is easy to understand and covers valuable to
 
 If something doesn’t work, please [file an issue](https://github.com/wacaine/dcl-smart-items-ce/issues/new).
 
+## Demo
+
+[Check out the demo scene here](https://builder.decentraland.org/view/77318ec4-638b-4543-a727-688f51b371ce)
+
 ## Latest Release
 
 [Latest Release Here](https://github.com/wacaine/dcl-smart-items-ce/releases)
