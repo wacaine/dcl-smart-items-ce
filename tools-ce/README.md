@@ -16,6 +16,7 @@ Here you can find feature decriptions here. Here you'll find links to:
 - [Detach From Item](#Detach-To-Item) 
 - [Motion Control](#Motion-Control) 
 
+[How to videos can be found here](https://www.youtube.com/channel/UClbjUzxLSxWPioGtQj2k2Qw)
 
 ## Thank You!
 
@@ -30,6 +31,8 @@ If something doesn’t work, please [file an issue](https://github.com/wacaine/d
 ## Demo
 
 [Check out the demo scene here](https://builder.decentraland.org/view/77318ec4-638b-4543-a727-688f51b371ce)
+
+See the demo scene [source code here](https://github.com/wacaine/dcl-sample-scenes/tree/master/tools-ce-grant-scene)
 
 ## Latest Release
 
