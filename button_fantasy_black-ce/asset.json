@@ -1,15 +1,78 @@
 {
-  "id": "2e1c4446-c99a-4698-9e13-819d232ca849",
-  "name": "Black Button",
+  "id": "2e1c4446-c99a-4698-9e13-ce9d232ca849",
+  "name": "Black Button CE",
   "tags": [
     "button"
   ],
   "category": "decorations",
   "parameters": [
     {
+      "id": "enableClickable",
+      "label": "Click on/off",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "id": "enabled",
+      "label": "Click Enabled",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "id": "hoverTextEnabled",
+      "label": "Enabled Hover Text",
+      "type": "text",
+      "default": "Press"
+    },
+    {
+      "id": "hoverTextDisabled",
+      "label": "Disabled Hover Text",
+      "type": "text",
+      "default": "Press Disabled"
+    },
+    {
       "id": "onClick",
       "label": "When clicked",
       "type": "actions"
+    },
+    {
+      "id": "onDisable",
+      "label": "When Disabled",
+      "type": "actions"
+    },
+    {
+      "id": "onEnable",
+      "label": "When Enabled",
+      "type": "actions"
+    }
+  ],
+  "actions": [
+    {
+      "id": "activate",
+      "label": "Activate",
+      "parameters": []
+    },
+    {
+      "id": "deactivate",
+      "label": "Deactivate",
+      "parameters": []
+    },
+    {
+      "id": "toggle",
+      "label": "Activate or Deactivate",
+      "parameters": []
+    },
+    {
+      "id": "setHoverText",
+      "label": "Set Hover Text",
+      "parameters": [
+        {
+          "id": "hoverText",
+          "label": "Hover Text",
+          "type": "text",
+          "default": "Press"
+        }
+      ]
     }
   ]
 }
