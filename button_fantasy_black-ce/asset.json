@@ -1,0 +1,15 @@
+{
+  "id": "2e1c4446-c99a-4698-9e13-819d232ca849",
+  "name": "Black Button",
+  "tags": [
+    "button"
+  ],
+  "category": "decorations",
+  "parameters": [
+    {
+      "id": "onClick",
+      "label": "When clicked",
+      "type": "actions"
+    }
+  ]
+}
