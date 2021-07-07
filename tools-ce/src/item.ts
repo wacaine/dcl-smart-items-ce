@@ -10,6 +10,7 @@ import {
   RotateData,
   TweenableVO,
 } from './tween'
+import { getEntityByName } from './utils'
 import { setTimeout, DelaySystem } from './delay'
 import { Animated, AnimType } from './animation'
 import { getEntityWorldPosition, getEntityWorldRotation } from './decentralandecsutils/helpers/helperfunctions'
@@ -123,11 +124,6 @@ log("onSceneReadyObservable ")
 log("onSceneReadyObservable: "+onSceneReadyObservableExists)
 
 let tempLastHost = null;
-
-const getEntityByName = (name: string) =>
-  Object.keys(engine.entities)
-    .map((key) => engine.entities[key])
-    .filter((entity) => (entity as Entity).name === name)[0]
 
 //taken from https://github.com/decentraland/decentraland-ecs-utils/blob/master/src/helpers/helperfunctions.ts
 
