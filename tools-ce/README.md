@@ -32,7 +32,7 @@ If something doesn’t work, please [file an issue](https://github.com/wacaine/d
 
 [Check out the demo scene here](https://builder.decentraland.org/view/77318ec4-638b-4543-a727-688f51b371ce)
 
-See the demo scene [source code here](https://github.com/wacaine/dcl-sample-scenes/tree/master/tools-ce-grant-scene)
+See the demo scene [source code here](https://github.com/wacaine/dcl-sample-scenes/tree/master/tools-ce-demo-scene)
 
 ## Latest Release
 
