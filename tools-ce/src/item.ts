@@ -1,7 +1,7 @@
 import {
   TweenSystem,TweenSystemMove,TweenSystemRotate,TweenSystemScale,
   Tweenable,TweenableMove,TweenableRotate,TweenableScale,
-  RepeatActionType,SceneChangeAddRmType,
+  RepeatActionType,SceneChangeAddRmType,TrackingActionType,
   Tween,
   Syncable,
   TweenType,
@@ -58,6 +58,8 @@ type SyncEntityTween =
     enabled: boolean
     numberOfSegments: number//for PathData and RotationData
     turnToFaceNext: boolean//for PathData and RotationData
+    trackingType: TrackingActionType
+    targetOfInterest: string
     pathOriginIndex: number//for PathData and RotationData
     //TODO MUST ADD CURRENT PARENT?!?!
     //controlMode: string  enabled will handle it???? or must emit this removal?
@@ -156,7 +158,7 @@ export default class Tools implements IScript<Props> {
     return this.container
   }
   init() {
-    const version = "1.1.0.alpha"
+    const version = "1.1.1-alpha"
     log("Toolbox-CE version " + version + " initializing... " )
     //tweenSystem = new TweenSystem()
     //engine.addSystem(this.tweenSystem)
@@ -306,7 +308,7 @@ export default class Tools implements IScript<Props> {
     }
 
     let percentStopDistToUse = 1;
-    if(distanceDelta < 0){
+    if(distanceDelta < .0001){
       percentStopDistToUse = 0
       //dont move
       endDest = start.clone();
@@ -686,7 +688,7 @@ if(props.clickable){
         action.values.y = endDest.y;
         action.values.z = endDest.z;
 
-        //log("moveToItem called dist: stopPercent:" + percentStopDistToUse + " " + distanceWhole + " vs " + distancePartial + "; "   + transformEnd.position.x + " " + transformEnd.position.y + " " + transformEnd.position.z + " vs" + endDest.x + " " + endDest.y + " " + endDest.z)
+        log("moveToItem called dist: target:" + target + " " + tween.trackingType +  "; stopPercent:" + percentOfDistanceToTravel +  "; "   + transformEnd.position.x + " " + transformEnd.position.y + " " + transformEnd.position.z + " vs" + endDest.x + " " + endDest.y + " " + endDest.z)
         
         action.actionId = "move"
 

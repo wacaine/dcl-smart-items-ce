@@ -1,9 +1,13 @@
+import { getEntityByName } from './utils'
+
 export type TweenType = 'move' | 'rotate' | 'rotate-q' | 'scale' | 'follow-path'
 export type SceneChangeAddRmType = 'add' | 'remove'
 export type RepeatActionType = 'none' | 'absolute' | 'relative' | 'reverse'
+export type TrackingActionType = 'none' | 'current' | 'meet' | 'follow'
+
 export type Tween = {
   target: string
-  targetOfInterest: string //transient conveted to x,y,z
+  targetOfInterest: string //transient conveted to x,y,z ; now needed for active tracking
   pathItem1: string //transient conveted to curvePoints
   pathItem2: string //transient conveted to curvePoints
   pathItem3: string //transient conveted to curvePoints
@@ -31,6 +35,7 @@ export type Tween = {
   returnToFirst: boolean//follow path? transient?
   numberOfSegments: number//for PathData and RotationData
   turnToFaceNext: boolean//REMOVE ME?!? not needed if lock all axis? gate to enable locking??? for PathData and RotationData
+  trackingType: TrackingActionType
   controlMode: string
   tweenControlMove: boolean
   tweenControlRotate: boolean
@@ -139,6 +144,8 @@ export class TweenableVO {
   curveCloseLoop : boolean
   numberOfSegments: number
   turnToFaceNext: boolean
+  trackingType: TrackingActionType
+  targetOfInterest: string
   repeatAction: RepeatActionType
   sceneAddRemove: SceneChangeAddRmType //add to pass for syncable????
   sender: string = 'initial'
@@ -171,7 +178,12 @@ export class TweenableVO {
     curveCloseLoop?: boolean
     numberOfSegments?: number  
     turnToFaceNext?: boolean
+    trackingType?: TrackingActionType
+    targetOfInterest?: string
     repeatAction?: RepeatActionType
+    lockX?:boolean
+    lockY?:boolean
+    lockZ?:boolean
     sender?: string
     timestamp?: number
     enabled?: boolean
@@ -198,7 +210,12 @@ export class TweenableVO {
     this.curveCloseLoop = args.curveCloseLoop
     this.numberOfSegments = args.numberOfSegments
     this.turnToFaceNext = args.turnToFaceNext
+    this.trackingType = args.trackingType
+    this.targetOfInterest = args.targetOfInterest
     this.repeatAction = args.repeatAction
+    this.lockX = args.lockX
+    this.lockY = args.lockY
+    this.lockZ = args.lockZ
     this.sender = args.sender
     this.timestamp = args.timestamp
     this.enabled = (args.enabled && args.enabled == true)
@@ -271,17 +288,82 @@ export class TweenSystem<T> {
       const tweenable = entity.getComponent(this.component)
       const transform:Transform = entity.getComponent(Transform)
 
+      let trackingEntity = null
+      let trackingTransform:Transform = null;
+      let trackingTweenable = null;
+      
+    
       if(tweenable.enabled == false){
         //log(entity.name + " disabled")
         continue;
       }
 
+      if(tweenable.trackingType && tweenable.targetOfInterest){
+        //TODO cache this so not looked up each time? into a component??
+        //make a record lookup cache? cleaned out when done?
+        trackingEntity = getEntityByName(tweenable.targetOfInterest);
+
+        if(trackingEntity){
+          trackingTransform = trackingEntity.getComponent(Transform)
+          if(trackingEntity.hasComponent(this.component)){
+            trackingTweenable = trackingEntity.getComponent(this.component)
+          }
+        }else{
+          //log not found but expected!?!?!
+        }
+      }
       
+      if(trackingEntity && trackingEntity !== undefined){
+        let trackingTransform:Transform = null;
+        let trackingTweenable = entity.getComponent(this.component)
+        if(trackingEntity){
+          trackingTransform = trackingEntity.getComponent(Transform)
+          if(trackingEntity.hasComponent(this.component)){
+            trackingTweenable = trackingEntity.getComponent(this.component)
+          }
+        }
+      }
+      //currentPosition,meet,follow
+      //addd if trackingType:'meet' and trackingName is not null and entity[trackingName].hasComponent(this.component)
+      //repeat:None|current: move point
+      //repeat:None|meet: move point future point - poll incase updates
+      //repeat:None|follow: move to current position
+      
+      //repeat:abs|current: move point
+      //repeat:abs|meet: move point future point - poll incase updates
+      //repeat:abs|follow: move to current position
+
+      //repeat:rel|current: move point
+      //repeat:rel|meet: move point future point - poll incase updates
+      //repeat:rel|follow: move to current position
+
+      //repeat:mirror|current: move point
+      //repeat:mirror|meet: move point future point - poll incase updates
+      //repeat:mirror|follow: move to current position
+        //copy that as its target point? cache it as the target?
+
+        //move uses  x,y,z
+        //rotate uses x,y,z
+        //scale uses 
 
       const speed = tweenable.speed / 10
       
       switch (tweenable.type) {
         case 'move': {
+          //TODO switch to using computeMoveVector however must convert x,y,z to vector objects
+          if(tweenable.trackingType && tweenable.trackingType != 'current'){
+            //tweenable.lockX=false
+            //tweenable.lockZ=true 
+            if(trackingTweenable && tweenable.trackingType == 'meet' ){ //TODO move 'meet' to invoker???
+              if(!tweenable.lockX) tweenable.x = trackingTweenable.x
+              if(!tweenable.lockY) tweenable.y = trackingTweenable.y
+              if(!tweenable.lockZ) tweenable.z = trackingTweenable.z
+            }else if(trackingTransform && tweenable.trackingType == 'follow'){
+              if(!tweenable.lockX) tweenable.x = trackingTransform.position.x
+              if(!tweenable.lockY) tweenable.y = trackingTransform.position.y
+              if(!tweenable.lockZ) tweenable.z = trackingTransform.position.z
+            }
+          }
           const start = tweenable.origin
           const offset = offsetFactory(tweenable, start)
           const end = new Vector3(offset('x'), offset('y'), offset('z'))
@@ -295,18 +377,69 @@ export class TweenSystem<T> {
             transform.position.copyFrom(Vector3.Lerp(start, end, easingIndex))
           } else if (tweenable.transition >= 1) {
             log('move ended')
+            
+            if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
+              tweenable.transition = -1
+              transform.position.copyFrom(end)
+              //log('rotate calling remove entity ' + this.constructor.name)
+              this.removeComponent(entity)
 
-            tweenable.transition = -1
-            transform.position.copyFrom(end)
-            //log('rotate calling remove entity ' + this.constructor.name)
-            this.removeComponent(entity)
+              // send actions
+              tweenable.channel.sendActions(tweenable.onComplete)
+            }else{
+              if(tweenable.repeatAction == 'relative'){
+                let origPos:Vector3 = tweenable.origin;
 
-            // send actions
-            tweenable.channel.sendActions(tweenable.onComplete)
+                //mutate end and start
+                //RISK never stopping getting too big
+                tweenable.origin=transform.position.clone()
+
+                //should scale relative to the diff between last orig and now
+                tweenable.x+=tweenable.x-origPos.x
+                tweenable.y+=tweenable.y-origPos.y
+                tweenable.z+=tweenable.z-origPos.z
+
+                //go back to 0 and if over shot etc. adjusts so its smooth
+                tweenable.transition = tweenable.transition - 1;
+              }else if(tweenable.repeatAction == 'reverse'){
+                //to avoid drift hard reset
+                tweenable.transition = 0;
+                transform.position.copyFrom(end)
+
+                //log("scale reverse before" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
+                //  + " vs " + tweenable.x + " " + tweenable.y + " " + tweenable.z)
+
+                //mutate end and start
+                let origPos:Vector3 = tweenable.origin;
+                tweenable.origin=end.clone()
+                
+                tweenable.x=origPos.x
+                tweenable.y=origPos.y
+                tweenable.z=origPos.z
+
+                //log("scale reverse after" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
+                //  + " vs " + tweenable.x + " " + tweenable.y + " " + tweenable.z)
+              }else{//repeat abs
+                tweenable.transition = 0;
+              }
+            }
+
           }
           break
         }
         case 'rotate': {
+          if(tweenable.trackingType && tweenable.trackingType != 'current'){
+            if(trackingTweenable && tweenable.trackingType == 'meet'){
+              if(!tweenable.lockX) tweenable.x = trackingTweenable.x
+              if(!tweenable.lockY) tweenable.y = trackingTweenable.y
+              if(!tweenable.lockZ) tweenable.z = trackingTweenable.z
+            }else if( trackingTransform && tweenable.trackingType == 'follow'){
+              const eulerAngles = trackingTransform.rotation.eulerAngles;
+              if(!tweenable.lockX) tweenable.x = eulerAngles.x
+              if(!tweenable.lockY) tweenable.y = eulerAngles.y
+              if(!tweenable.lockZ) tweenable.z = eulerAngles.z
+            }
+          }
           const start = Quaternion.Euler(
             tweenable.origin.x,
             tweenable.origin.y,
@@ -367,6 +500,17 @@ export class TweenSystem<T> {
           break
         }
         case 'rotate-q': {
+          if(tweenable.trackingType && tweenable.trackingType != 'current'){
+            if(trackingTweenable && tweenable.trackingType == 'meet'){
+              if(!tweenable.lockX) tweenable.x = trackingTweenable.x
+              if(!tweenable.lockY) tweenable.y = trackingTweenable.y
+              if(!tweenable.lockZ) tweenable.z = trackingTweenable.z
+              tweenable.w = trackingTweenable.w
+            }else if( trackingTransform && tweenable.trackingType == 'follow'){
+              // TODO handle locking
+              tweenable.originQ = trackingTransform.rotation
+            }
+          }
           //log("rotate-q " + tweenable.transition +  " "  + tweenable.destPosition +  " " + tweenable.x +  " " + tweenable.y +  " " + tweenable.z +  " " + tweenable.w)
           const start = tweenable.originQ //
           const end = new Quaternion(tweenable.x, tweenable.y, tweenable.z,tweenable.w)
@@ -457,7 +601,7 @@ export class TweenSystem<T> {
                   if (path.target >= path.path.length-1) { //go back to first target
                     path.target = 0
                   }
-                  if(path.target == path.start){
+                  if(path.target == path.start){//if repeat enabled? do that?
                     tweenable.transition = 1
                   }
                   path.fraction = 0      
@@ -525,6 +669,17 @@ export class TweenSystem<T> {
           break
         }
         case 'scale': {
+          if(tweenable.trackingType && tweenable.trackingType != 'current'){
+            if(tweenable.trackingType == 'meet' && trackingTweenable){
+              tweenable.x = trackingTweenable.x
+              tweenable.y = trackingTweenable.y
+              tweenable.z = trackingTweenable.z
+            }else if(tweenable.trackingType == 'follow' && trackingTransform){
+              tweenable.x = trackingTransform.scale.x
+              tweenable.y = trackingTransform.scale.y
+              tweenable.z = trackingTransform.scale.z
+            }
+          }
           const start = tweenable.origin
           const offset = offsetFactory(tweenable, start)
           const end = new Vector3(offset('x'), offset('y'), offset('z'))

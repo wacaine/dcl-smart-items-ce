@@ -600,7 +600,50 @@
           ],
           "default": "linear"
         },
-
+        {
+          "id": "repeatAction",
+          "label": "Repeat Type",
+          "type": "options",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "absolute",
+              "label": "Absolute"
+            },
+            {
+              "value": "relative",
+              "label": "Relative"
+            },
+            {
+              "value": "reverse",
+              "label": "Mirror"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "id": "trackingType",
+          "label": "Target Tracking Type",
+          "type": "options",
+          "options": [
+            {
+              "value": "current",
+              "label": "Current Position"
+            },
+            {
+              "value": "meet",
+              "label": "End Action Position"
+            },
+            {
+              "value": "follow",
+              "label": "Follow"
+            }
+          ],
+          "default": "current"
+        },
         {
           "id": "speed",
           "label": "Speed",
@@ -752,6 +795,31 @@
           "min": 1,
           "max": 20,
           "default": 10
+        },
+        
+        {
+          "id": "repeatAction",
+          "label": "Repeat Type",
+          "type": "options",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "absolute",
+              "label": "Absolute"
+            },
+            {
+              "value": "relative",
+              "label": "Relative"
+            },
+            {
+              "value": "reverse",
+              "label": "Mirror"
+            }
+          ],
+          "default": "none"
         },
         {
           "id": "onComplete",
