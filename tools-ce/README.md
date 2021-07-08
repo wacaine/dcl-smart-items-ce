@@ -78,6 +78,7 @@ The target item will rotate towards the player at a configurable speed for how f
 | Lock Y                               | Prevent rotation on Y axis per lock mode above |
 | Lock Z                               | Prevent rotation on Z axis per lock mode above |
 | Curve type                           | Curve type is the rate at which the item rotates over time.  For example start off slow and speed up.  TODO LINK_TO_CURVE_TYPE_LIST |
+| Repeat Type                           | Once the action is completed should it repeat and if so how.   TODO LINK_TO_REPEAT_TYPE_LIST |
 | Speed                                | Overall speed for which the item rotates |
 | When transition finished             | Select a whole set of new actions when this action completes |
 
@@ -97,6 +98,8 @@ The target item will rotate towards the item of interest at a configurable speed
 | Lock Y                               | Prevent rotation on Y axis per lock mode above |
 | Lock Z                               | Prevent rotation on Z axis per lock mode above |
 | Curve type                           | Curve type is the rate at which the item rotates over time.  For example start off slow and speed up.  TODO LINK_TO_CURVE_TYPE_LIST |
+| Repeat Type                           | Once the action is completed should it repeat and if so how.   TODO LINK_TO_REPEAT_TYPE_LIST |
+| Target Tracking Type                           | COMING SOON - During the motion how should it track the target object.   TODO LINK_TO_TARGETT_TRACKING_TYPE_LIST |
 | Speed                                | Overall speed for which the item rotates |
 | When transition finished             | Select a whole set of new actions when this action completes |
 
@@ -117,6 +120,8 @@ The target item will move towards the target item at a configurable speed for ho
 | Move Percent of Distance                  | Percent of distance to move between start and end |
 | Move No Closer Than                  | Item will move no closer than N units from end |
 | Curve type                           | Curve type is the rate at which the item rotates over time.  For example start off slow and speed up.  TODO LINK_TO_CURVE_TYPE_LIST |
+| Repeat Type                           | Once the action is completed should it repeat and if so how.   TODO LINK_TO_REPEAT_TYPE_LIST |
+| Target Tracking Type                           | During the motion how should it track the target object.   TODO LINK_TO_TARGETT_TRACKING_TYPE_LIST |
 | Speed                                | Overall speed for which the item rotates |
 | When transition finished             | Select a whole set of new actions when this action completes |
 
@@ -137,6 +142,8 @@ The target item will move towards the player at a configurable speed for how fas
 | Move Percent of Distance                  | Percent of distance to move between start and end |
 | Move No Closer Than                  | Item will move no closer than N units from end |
 | Curve type                           | Curve type is the rate at which the item rotates over time.  For example start off slow and speed up.  TODO LINK_TO_CURVE_TYPE_LIST |
+| Repeat Type                           | Once the action is completed should it repeat and if so how.   TODO LINK_TO_REPEAT_TYPE_LIST |
+| Target Tracking Type                           | COMING SOON - During the motion how should it track the target object.   TODO LINK_TO_TARGETT_TRACKING_TYPE_LIST |
 | Speed                                | Overall speed for which the item rotates |
 | When transition finished             | Select a whole set of new actions when this action completes |
 
@@ -144,18 +151,82 @@ The target item will move towards the player at a configurable speed for how fas
 
 The target item will follow a path of defined items. This is like move to item however you list more than one item. It will also not follow the path strictly but more of a curved path AND rotate the object-oriented facing forward along the path. 
 
+| Parameter                            | Description                                                                                                                      |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Item                                 | Item to be follow the path |
+| Move to Item (1-5)                             | Item to move to.  Order picked will be order traversed |
+| Return to First                              | If enabled will return to start.  If not will stop at last 'move to item' |
+| Face Forward                              | If enabled will rotate the object to be parrellel to the path as it moves |
+| # of segements                              | How many point per segment (between move to item(n) and move to item (n+1) |
+| Lock X-Axis Rot Movement                              | Will lock X-Axis of rotation while traversing curve |
+| Lock Y-Axis Rot Movement                             | Will lock Y-Axis of rotation while traversing curve |
+| Lock Z-Axis Rot Movement                             | Will lock Z-Axis of rotation while traversing curve |
+
 ### Scene Add/Remove
 
 Action will let you remove/add an object. Not the most elegant way to handle the user experience object/movement but has its uses. One is removed objects do not contribute to scene limitations and boost scene performance.
+
+| Parameter                            | Description                                                                                                                      |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Item                                 | Item to be add/removed |
+| Action                              | Add will add item back to scene.  Remove will remove item from scene |
+
 
 ### Attach To Item
 
 Will attach 1 item to another giving the attached item the position, rotation, scale of the target/host object. This is very useful to move items in one group instead of individually.
 
+| Parameter                            | Description                                                                                                                      |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Item                                 | Item to be attached |
+| Attach To                              | Item to be attached to/make the parent |
+| Attach To Origin                              | Attach item's center to the parents center  |
+| X Offset                              | Adjust x position. In case attached item and parent do not line up how you like you can try too manually align how you want  |
+| Y Offset                              | Adjust y position. In case attached item and parent do not line up how you like you can try too manually align how you want |
+| Z Offset                              | Adjust z position. In case attached item and parent do not line up how you like you can try too manually align how you want|
+
 ### Detach From Item
 
 Will detach 1 item to another giving the attached item the position, rotation, scale of the target/host object. This is very useful to move items in one group instead of individually. 
 
+
+| Parameter                            | Description                                                                                                                      |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Item                                 | Item to be detached |
+| Attach To                              | The parent to be detached from |
+
+
 ### Motion Control
 
 Allows a player to pause, stop, resume an action
+
+## Types
+
+### Curve Type
+
+TODO
+
+### Repeat Type
+
+| Parameter                            | Description                                                                                                                      |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| None                                 | When the action is done. Do not repeat |
+| Absolute                               | When the action is done start over from the position/rotation/scale the item was first in before the action started  |
+| Relative                               | When the action is done it will loop the same action again from its current position/rotation/scale and apply it again |
+| Mirror                               | When the action is done it will loop the same action but in reverse.  It will start from its end position/rotation/scale and return to its start |
+
+### Target Tracking Type
+
+| Parameter                            | Description                                                                                                                      |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Current Position                                 | Will track the item/player based on current position of that item/player when the action is fired.  It will be  straight path towards this point. |
+| End Action Position                               | Will track the item/player based its future/end position if that item/player is in motion.  If not in motion this has the same effect as "Current Position".  It will be  straight path towards this point.  |
+| Follow                               | Will track the item/player based on its position at that moment in time.  It will auto correct as the tracked item moves.  This will produce a curved path |
+
+## Multiplayer Support
+
+Listed here are modes/params that I have not thoroughly tested for multi player syncability
+
+* Repeat Types: Absolute, Relative, Mirror.   None should be fine
+* Target Tracking Types: Follow.   Current Position/En Action Position should be fine
+* Scene Add/Remove - while an item is removed from the scene it will not recieve updates to item syncing
