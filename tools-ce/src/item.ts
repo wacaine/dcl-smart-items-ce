@@ -1,7 +1,7 @@
 import {
   TweenSystem,TweenSystemMove,TweenSystemRotate,TweenSystemScale,
   Tweenable,TweenableMove,TweenableRotate,TweenableScale,
-  RepeatActionType,SceneChangeAddRmType,TrackingActionType,
+  RepeatActionType,SceneChangeAddRmType,TrackingActionType,TargetOfInterestType,
   Tween,
   Syncable,
   TweenType,
@@ -60,6 +60,7 @@ type SyncEntityTween =
     turnToFaceNext: boolean//for PathData and RotationData
     trackingType: TrackingActionType
     targetOfInterest: string
+    targetOfInterestType: TargetOfInterestType
     pathOriginIndex: number//for PathData and RotationData
     //TODO MUST ADD CURRENT PARENT?!?!
     //controlMode: string  enabled will handle it???? or must emit this removal?
@@ -539,6 +540,12 @@ if(props.clickable){
         endDest = computeMoveVector(transformTarget.position,endDest,lockX,lockY,lockZ,percentOfDistanceToTravel,moveNoCloserThan);
         
         let clonedAction = clone(action);
+        if(!clonedAction.values.targetOfInterest){
+          clonedAction.values.targetOfInterest = action.sender
+        }else{
+          log("moveToPlayer had sender already " + action.sender + " " + clonedAction.values.targetOfInterest + " " + channel.id)
+        }
+        clonedAction.values.targetOfInterestType = 'player'
 
         //set direction to where the item is
         clonedAction.values.relative = false
@@ -559,9 +566,8 @@ if(props.clickable){
           clonedAction.values.onComplete[0].values.playerPosition=playerPosition
         }
         
-        channel.sendActions(
-          [clonedAction]
-        )
+        //send rotate move so everyone else gets it
+        channel.sendActions( [clonedAction] )
       }else{
         log("moveToPlayer called " + action.sender + " was not me " + channel.id + " so skipping" )
       }
@@ -642,6 +648,8 @@ if(props.clickable){
         //log("entPar " +engine.rootEntity.g)
 
         if (entity && entity !== undefined) {
+          //FIXME add a already doing this check
+
           //set direction to where the player is
           let transform = entity.getComponent(Transform)
           // Rotate to face the player
@@ -692,8 +700,14 @@ if(props.clickable){
             log("clonedAction.onComplete[0] " + clonedAction.values.onComplete[0].actionId )
             clonedAction.values.onComplete[0].values.playerPosition=playerPosition
           }
+          if(!clonedAction.values.targetOfInterest){
+            clonedAction.values.targetOfInterest = action.sender
+          }else{
+            log("facePlayer had sender already " + action.sender + " " + clonedAction.values.targetOfInterest + " " + channel.id)
+          }
+          clonedAction.values.targetOfInterestType = 'player'
           
-
+          //send rotate move so everyone else gets it
           channel.sendActions([clonedAction])
         }
       }else{

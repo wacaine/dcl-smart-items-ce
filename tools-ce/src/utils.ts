@@ -101,7 +101,7 @@ export function computeMoveVector(start:Vector3,endDest:Vector3,lockX:boolean,lo
         if(lockY) endDest.y=start.y
         if(lockZ) endDest.z=start.z
     }
-    log("computeMoveVector " + start + " " + endDestOrig + " " + percentOfDistanceToTravel + " " + moveNoCloserThan + " " + distanceDelta + " returning " + endDest);
+    //log("computeMoveVector " + start + " " + endDestOrig + " " + percentOfDistanceToTravel + " " + moveNoCloserThan + " " + distanceDelta + " returning " + endDest);
     return endDest;
     }
 
