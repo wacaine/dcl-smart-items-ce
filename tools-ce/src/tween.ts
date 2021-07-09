@@ -7,6 +7,7 @@ export type TrackingActionType = 'none' | 'current' | 'meet' | 'follow'
 export type TargetOfInterestType = 'entity' | 'player'
 
 export type Tween = {
+ // transition: number
   target: string
   targetOfInterestType: TargetOfInterestType
   targetOfInterest: string //transient conveted to x,y,z ; now needed for active tracking
@@ -162,6 +163,7 @@ export class TweenableVO {
   pathOriginIndex: number//need to persit - for PathData and RotationData
 
   constructor(args: {
+    transition?: number
     type: TweenType
     x: number
     y: number
@@ -193,6 +195,7 @@ export class TweenableVO {
     enabled?: boolean
     sceneAddRemove?: SceneChangeAddRmType //is this needed!?!!?
   }) {
+    if(args.transition && args.transition !== undefined) this.transition = args.transition
     this.type = args.type
     this.x = args.x
     this.y = args.y
@@ -380,6 +383,9 @@ export class TweenSystem<T> {
               //keep updating origin for smooth follow?
               //TODO why does move require setting this but not rotateq?
               if(tweenable.repeatAction == 'relative'){
+                if(!tweenable.origin || tweenable.origin !== Vector3){
+                  tweenable.origin = new Vector3()
+                }
                 tweenable.origin.copyFrom(transform.position)
               }
               
@@ -440,8 +446,8 @@ export class TweenSystem<T> {
                 //go back to 0 and if over shot etc. adjusts so its smooth
                 tweenable.transition = tweenable.transition - 1;
               }else if(tweenable.repeatAction == 'reverse'){
-                //to avoid drift hard reset
-                tweenable.transition = 0;
+                //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
+                tweenable.transition = tweenable.transition - 1;
                 transform.position.copyFrom(end)
 
                 //log("scale reverse before" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
@@ -458,7 +464,8 @@ export class TweenSystem<T> {
                 //log("scale reverse after" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
                 //  + " vs " + tweenable.x + " " + tweenable.y + " " + tweenable.z)
               }else{//repeat abs
-                tweenable.transition = 0;
+                //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
+                tweenable.transition = tweenable.transition - 1;
               }
             }
 
@@ -515,8 +522,8 @@ export class TweenSystem<T> {
                 //go back to 0 and if over shot etc. adjusts so its smooth
                 tweenable.transition = tweenable.transition - 1;
               }else if(tweenable.repeatAction == 'reverse'){
-                //to avoid drift hard reset
-                tweenable.transition = 0;
+                //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
+                tweenable.transition = tweenable.transition - 1;
                 transform.rotation.copyFrom(end)
 
                 //log("rotate repeat before" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
@@ -533,7 +540,8 @@ export class TweenSystem<T> {
                 //log("rotate repeat after" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
                 //  + " vs " + tweenable.x + " " + tweenable.y + " " + tweenable.z)
               }else{//repeat abs
-                tweenable.transition = 0;
+                //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
+                tweenable.transition = tweenable.transition - 1;
               }
             }
           }
@@ -570,7 +578,10 @@ export class TweenSystem<T> {
 
               //keep syncing origin for smooth follow???
               //TODO why does move require setting this but not rotateq?
-              //tweenable.originQ = transform.rotation
+              //its cuz computeFaceAngle takes object itself instead of a copied var of position/rotate
+              //if(tweenable.repeatAction == 'relative'){
+                //tweenable.originQ = transform.rotation
+              //}
             }
           }
           //log("rotate-q " + tweenable.transition +  " "  + tweenable.destPosition +  " " + tweenable.x +  " " + tweenable.y +  " " + tweenable.z +  " " + tweenable.w)
@@ -620,7 +631,8 @@ export class TweenSystem<T> {
                 //go back to 0 and if over shot etc. adjusts so its smooth
                 tweenable.transition = tweenable.transition - 1;
               }else{//repeat abs
-                tweenable.transition = 0;
+                //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
+                tweenable.transition = tweenable.transition - 1;
               }
             }
           }
@@ -631,6 +643,9 @@ export class TweenSystem<T> {
           
           //const start = tweenable.originQ
           //const end = new Quaternion(tweenable.x, tweenable.y, tweenable.z,tweenable.w)
+          
+          //TODO adjust speed to match norms.  so divide speed additionally by segment count
+          //that way speed is normalized for all actions
 
           if (tweenable.transition >= 0 && tweenable.transition < 1) {
             //tweenable.transition += dt * speed
@@ -730,8 +745,8 @@ export class TweenSystem<T> {
               // send actions
               tweenable.channel.sendActions(tweenable.onComplete)
             }else{
-              //reset and start again
-              tweenable.transition = 0
+              //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
+              tweenable.transition = tweenable.transition - 1;
             }
           }
           break
@@ -784,8 +799,8 @@ export class TweenSystem<T> {
                 //go back to 0 and if over shot etc. adjusts so its smooth
                 tweenable.transition = tweenable.transition - 1;
               }else if(tweenable.repeatAction == 'reverse'){
-                //to avoid drift hard reset
-                tweenable.transition = 0;
+                //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
+                tweenable.transition = tweenable.transition - 1;
                 transform.scale.copyFrom(end)
 
                 //log("scale reverse before" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
@@ -802,7 +817,8 @@ export class TweenSystem<T> {
                 //log("scale reverse after" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
                 //  + " vs " + tweenable.x + " " + tweenable.y + " " + tweenable.z)
               }else{//repeat abs
-                tweenable.transition = 0;
+                //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
+                tweenable.transition = tweenable.transition - 1;
               }
             }
           }
