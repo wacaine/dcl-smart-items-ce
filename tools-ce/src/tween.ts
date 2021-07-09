@@ -1,4 +1,4 @@
-import { getEntityByName } from './utils'
+import { getEntityByName,computeFaceAngle,computeMoveVector } from './utils'
 
 export type TweenType = 'move' | 'rotate' | 'rotate-q' | 'scale' | 'follow-path'
 export type SceneChangeAddRmType = 'add' | 'remove'
@@ -313,16 +313,6 @@ export class TweenSystem<T> {
         }
       }
       
-      if(trackingEntity && trackingEntity !== undefined){
-        let trackingTransform:Transform = null;
-        let trackingTweenable = entity.getComponent(this.component)
-        if(trackingEntity){
-          trackingTransform = trackingEntity.getComponent(Transform)
-          if(trackingEntity.hasComponent(this.component)){
-            trackingTweenable = trackingEntity.getComponent(this.component)
-          }
-        }
-      }
       //currentPosition,meet,follow
       //addd if trackingType:'meet' and trackingName is not null and entity[trackingName].hasComponent(this.component)
       //repeat:None|current: move point
@@ -350,21 +340,26 @@ export class TweenSystem<T> {
       
       switch (tweenable.type) {
         case 'move': {
+          const start = tweenable.origin
+
           //TODO switch to using computeMoveVector however must convert x,y,z to vector objects
           if(tweenable.trackingType && tweenable.trackingType != 'current'){
-            //tweenable.lockX=false
-            //tweenable.lockZ=true 
             if(trackingTweenable && tweenable.trackingType == 'meet' ){ //TODO move 'meet' to invoker???
-              if(!tweenable.lockX) tweenable.x = trackingTweenable.x
-              if(!tweenable.lockY) tweenable.y = trackingTweenable.y
-              if(!tweenable.lockZ) tweenable.z = trackingTweenable.z
+              const end = new Vector3(trackingTweenable.x, trackingTweenable.y, trackingTweenable.z)
+              const endDest = computeMoveVector(start,end,tweenable.lockX,tweenable.lockY,tweenable.lockZ,tweenable.percentOfDistanceToTravel,tweenable.moveNoCloserThan);
+              
+              tweenable.x = endDest.x
+              tweenable.y = endDest.y
+              tweenable.z = endDest.z
             }else if(trackingTransform && tweenable.trackingType == 'follow'){
-              if(!tweenable.lockX) tweenable.x = trackingTransform.position.x
-              if(!tweenable.lockY) tweenable.y = trackingTransform.position.y
-              if(!tweenable.lockZ) tweenable.z = trackingTransform.position.z
+              const end = new Vector3().copyFrom(trackingTransform.position)//is copy required? flyweight for vector storage?
+              const endDest = computeMoveVector(start,end,tweenable.lockX,tweenable.lockY,tweenable.lockZ,tweenable.percentOfDistanceToTravel,tweenable.moveNoCloserThan);
+
+              tweenable.x = endDest.x
+              tweenable.y = endDest.y
+              tweenable.z = endDest.z
             }
           }
-          const start = tweenable.origin
           const offset = offsetFactory(tweenable, start)
           const end = new Vector3(offset('x'), offset('y'), offset('z'))
 
@@ -502,13 +497,19 @@ export class TweenSystem<T> {
         case 'rotate-q': {
           if(tweenable.trackingType && tweenable.trackingType != 'current'){
             if(trackingTweenable && tweenable.trackingType == 'meet'){
-              if(!tweenable.lockX) tweenable.x = trackingTweenable.x
-              if(!tweenable.lockY) tweenable.y = trackingTweenable.y
-              if(!tweenable.lockZ) tweenable.z = trackingTweenable.z
-              tweenable.w = trackingTweenable.w
+              let lookAtTarget = new Vector3(trackingTweenable.x,trackingTweenable.y,trackingTweenable.z);//flyweight to avoid new object each time?
+              let endRotation:Quaternion = computeFaceAngle(lookAtTarget,transform,tweenable.lockMode,tweenable.lockX,tweenable.lockY,tweenable.lockZ);
+              tweenable.x = endRotation.x
+              tweenable.y = endRotation.y
+              tweenable.z = endRotation.z
+              tweenable.w = endRotation.w
             }else if( trackingTransform && tweenable.trackingType == 'follow'){
-              // TODO handle locking
-              tweenable.originQ = trackingTransform.rotation
+              let lookAtTarget = new Vector3().copyFrom(trackingTransform.position)
+              let endRotation:Quaternion = computeFaceAngle(lookAtTarget,transform,tweenable.lockMode,tweenable.lockX,tweenable.lockY,tweenable.lockZ);
+              tweenable.x = endRotation.x
+              tweenable.y = endRotation.y
+              tweenable.z = endRotation.z
+              tweenable.w = endRotation.w
             }
           }
           //log("rotate-q " + tweenable.transition +  " "  + tweenable.destPosition +  " " + tweenable.x +  " " + tweenable.y +  " " + tweenable.z +  " " + tweenable.w)
