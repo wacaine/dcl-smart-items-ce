@@ -8,7 +8,7 @@ export type TargetOfInterestType = 'entity' | 'player'
 
 export type Tween = {
  // transition: number
-  target: string
+  target: string,
   targetOfInterestType: TargetOfInterestType
   targetOfInterest: string //transient conveted to x,y,z ; now needed for active tracking
   pathItem1: string //transient conveted to curvePoints
@@ -16,16 +16,16 @@ export type Tween = {
   pathItem3: string //transient conveted to curvePoints
   pathItem4: string //transient conveted to curvePoints
   pathItem5: string //transient conveted to curvePoints
-  percentOfDistanceToTravel:float, //transient conveted to x,y,z
-  moveNoCloserThan:float, //transient conveted to x,y,z
-  playerPosition:Vector3, //????transient conveted to x,y,z?????
-  sceneAddRemove: SceneChangeAddRmType, //add to pass for syncable
-  attachToOrigin: boolean,//transient???
-  lockMode:string,
-  lockX:boolean,
-  lockY:boolean,
-  lockZ:boolean,
-  lockW:boolean, //can we get rid of this since we convert between euler and back?
+  percentOfDistanceToTravel: number, //conveted to x,y,z - need for 'follow'
+  moveNoCloserThan: number //conveted to x,y,z - need for 'follow'
+  playerPosition:Vector3 //????transient conveted to x,y,z?????
+  sceneAddRemove: SceneChangeAddRmType //add to pass for syncable
+  attachToOrigin: boolean//transient???
+  lockMode:string
+  lockX:boolean
+  lockY:boolean
+  lockZ:boolean
+  lockW:boolean //can we get rid of this since we convert between euler and back?
   x: number
   y: number
   z: number
@@ -150,6 +150,8 @@ export class TweenableVO {
   trackingType: TrackingActionType
   targetOfInterest: string
   targetOfInterestType: TargetOfInterestType
+  percentOfDistanceToTravel: number //need for 'follow'
+  moveNoCloserThan: number //need for 'follow'
   repeatAction: RepeatActionType
   sceneAddRemove: SceneChangeAddRmType //add to pass for syncable????
   sender: string = 'initial'
@@ -186,6 +188,8 @@ export class TweenableVO {
     trackingType?: TrackingActionType
     targetOfInterest?: string
     targetOfInterestType?: TargetOfInterestType
+    percentOfDistanceToTravel?:number
+    moveNoCloserThan?:number
     repeatAction?: RepeatActionType
     lockX?:boolean
     lockY?:boolean
@@ -201,6 +205,8 @@ export class TweenableVO {
     this.y = args.y
     this.z = args.z
     this.w = args.w
+    this.percentOfDistanceToTravel = args.percentOfDistanceToTravel
+    this.moveNoCloserThan = args.moveNoCloserThan
     //this.destPosition = args.destPosition
     this.speed = args.speed
     this.relative = args.relative

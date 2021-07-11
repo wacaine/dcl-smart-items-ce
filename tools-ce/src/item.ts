@@ -61,6 +61,8 @@ type SyncEntityTween =
     trackingType: TrackingActionType
     targetOfInterest: string
     targetOfInterestType: TargetOfInterestType
+    percentOfDistanceToTravel:number //need for 'follow'
+    moveNoCloserThan:number //need for 'follow'
     pathOriginIndex: number//for PathData and RotationData
     //TODO MUST ADD CURRENT PARENT?!?!
     //controlMode: string  enabled will handle it???? or must emit this removal?
@@ -272,10 +274,10 @@ if(props.clickable){
       channel.sendActions(tween.onComplete)
     } )
     channel.handleAction<Tween>('attachToItem', (action) => {
-      const { target, targetOfInterest,attachToOrigin, ...tween } = action.values
-      log("attachToItem called " + target + " to " + targetOfInterest + " attachOrigin:" + attachToOrigin)
+      const { target, attachToOrigin, ...tween } = action.values
+      log("attachToItem called " + target + " to " + tween.targetOfInterest + " attachOrigin:" + attachToOrigin)
       const entityToAttach = getEntityByName(target)
-      const entityTarget = getEntityByName(targetOfInterest)
+      const entityTarget = getEntityByName(tween.targetOfInterest)
       if (entityToAttach && entityTarget) {
         const transformParent = entityTarget.getComponent(Transform)
         const transformChild = entityToAttach.getComponent(Transform)
@@ -339,11 +341,11 @@ if(props.clickable){
       channel.sendActions(tween.onComplete)
     } )
     channel.handleAction<Tween>('detachFromItem', (action) => {
-      const { target, targetOfInterest, ...tween } = action.values
-      log("detachFromItem called " + target + " from " + targetOfInterest)
+      const { target,  ...tween } = action.values
+      log("detachFromItem called " + target + " from " + tween.targetOfInterest)
       
       const entityToDetach = getEntityByName(target)
-      const entityTarget = getEntityByName(targetOfInterest)
+      const entityTarget = getEntityByName(tween.targetOfInterest)
       if (entityToDetach && entityTarget) {
         //must grab old value to put back
         let transformChild = entityToDetach.getComponent(Transform)
@@ -376,8 +378,9 @@ if(props.clickable){
     } )
     
     channel.handleAction<Tween>('followItemPath', (action) => {
-      
-      const { target, returnToFirst,numberOfSegments,turnToFaceNext,lockX,lockY,lockZ,lockW,pathItem1,pathItem2,pathItem3,pathItem4,pathItem5, ...tween } = action.values
+      const { target
+          //returnToFirst,numberOfSegments,turnToFaceNext,lockX,lockY,lockZ,lockW,pathItem1,pathItem2,pathItem3,pathItem4,pathItem5
+          , ...tween } = action.values
       log("followItemPath called " + target + " sender " + action.sender + " ent name " + action.entityName)
 
       const sender = action.sender
@@ -389,18 +392,18 @@ if(props.clickable){
 
         log("followItemPath called")
         // how many points on the curve
-        let curvePoints = Math.max(1,numberOfSegments)
-        let closeLoop = returnToFirst
+        let curvePoints = Math.max(1,tween.numberOfSegments)
+        let closeLoop = tween.returnToFirst
 
         // Compile these points into an array
         const cpoints = new Array()
 
         let pathItems = new Array();
-        pathItems.push(pathItem1)
-        pathItems.push(pathItem2)
-        pathItems.push(pathItem3)
-        pathItems.push(pathItem4)
-        pathItems.push(pathItem5)
+        pathItems.push(tween.pathItem1)
+        pathItems.push(tween.pathItem2)
+        pathItems.push(tween.pathItem3)
+        pathItems.push(tween.pathItem4)
+        pathItems.push(tween.pathItem5)
 
         //hacking using var to create signatureOfVectors
         let cpointsSignatureHack = new Vector3()
@@ -478,14 +481,14 @@ if(props.clickable){
           curvePoints: cpoints,
           curveNBPoints: curvePoints,
           curveCloseLoop: closeLoop,
-          numberOfSegments: numberOfSegments,
-          turnToFaceNext: turnToFaceNext,
+          numberOfSegments: tween.numberOfSegments,
+          turnToFaceNext: tween.turnToFaceNext,
           timestamp: currentTime,
         })
         //TODO must scan path to shift array based on point 1 a curvepath will not pick vector 1 first always
         entity.addComponentOrReplace(new PathData(cpoints,curvePoints,closeLoop,origin))
-        if(turnToFaceNext){
-          entity.addComponentOrReplace(new RotateData(originQ,lockX,lockY,lockZ,lockW))
+        if(tween.turnToFaceNext){
+          entity.addComponentOrReplace(new RotateData(originQ,tween.lockX,tween.lockY,tween.lockZ,tween.lockW))
         }
         entity.addComponentOrReplace(tweenable)
         entity.addComponentOrReplace(new Syncable())
@@ -493,24 +496,24 @@ if(props.clickable){
       }
     })
     channel.handleAction<Tween>('tweenControlAction', (action) => {
-      const { target, controlMode,tweenControlMove,tweenControlRotate,tweenControlScale, ...tween } = action.values
-      log("tweenControlAction called " + target + "  " + controlMode + " (" + tweenControlMove +","+ tweenControlRotate +","+tweenControlScale +")")
+      const { target, ...tween } = action.values
+      log("tweenControlAction called " + target + "  " + tween.controlMode + " (" + tween.tweenControlMove +","+ tween.tweenControlRotate +","+tween.tweenControlScale +")")
       
       const entity = getEntityByName(target)
       if (entity && entity !== undefined) {
-        if(tweenControlMove && entity.hasComponent(TweenableMove)){
-          this.processControlAction('move',entity,controlMode,TweenableMove)
+        if(tween.tweenControlMove && entity.hasComponent(TweenableMove)){
+          this.processControlAction('move',entity,tween.controlMode,TweenableMove)
         }
-        if(tweenControlRotate && entity.hasComponent(TweenableRotate)){
-          this.processControlAction('rotate',entity,controlMode,TweenableRotate)
+        if(tween.tweenControlRotate && entity.hasComponent(TweenableRotate)){
+          this.processControlAction('rotate',entity,tween.controlMode,TweenableRotate)
         }
-        if(tweenControlScale && entity.hasComponent(TweenableScale)){
-          this.processControlAction('scale',entity,controlMode,TweenableScale)
+        if(tween.tweenControlScale && entity.hasComponent(TweenableScale)){
+          this.processControlAction('scale',entity,tween.controlMode,TweenableScale)
         }
       }
     } )
     channel.handleAction<Tween>('moveToPlayer', (action) => {
-      const { target,percentOfDistanceToTravel,moveNoCloserThan,lockX,lockY,lockZ, ...tween } = action.values
+      const { target, ...tween } = action.values
 
       
       const entityToMove = getEntityByName(target)
@@ -537,7 +540,7 @@ if(props.clickable){
         
         //let endPos:Vector3 = transformEnd.position
           
-        endDest = computeMoveVector(transformTarget.position,endDest,lockX,lockY,lockZ,percentOfDistanceToTravel,moveNoCloserThan);
+        endDest = computeMoveVector(transformTarget.position,endDest,tween.lockX,tween.lockY,tween.lockZ,tween.percentOfDistanceToTravel,tween.moveNoCloserThan);
         
         let clonedAction = clone(action);
         if(!clonedAction.values.targetOfInterest){
@@ -575,10 +578,10 @@ if(props.clickable){
 
     channel.handleAction<Tween>('moveToItem', (action) => {
       log("moveToItem called " + action.sender + " " + action.actionId + " " + action.entityName + " " + action.values.target + " -> " + action.values.targetOfInterest)
-      const { target, targetOfInterest,percentOfDistanceToTravel,moveNoCloserThan,lockX,lockY,lockZ, ...tween } = action.values
+      const { target, ...tween } = action.values
 
       const entityToMove = getEntityByName(target)
-      const entityDest = getEntityByName(targetOfInterest)
+      const entityDest = getEntityByName(tween.targetOfInterest)
       if (entityDest && entityToMove) {
         let transformTarget = entityToMove.getComponent(Transform)
         let transformEnd = entityDest.getComponent(Transform)
@@ -586,15 +589,16 @@ if(props.clickable){
         let endPos:Vector3 = transformEnd.position
         let endDest:Vector3 = transformEnd.position
 
-        endDest = computeMoveVector(transformTarget.position,endDest,lockX,lockY,lockZ,percentOfDistanceToTravel,moveNoCloserThan);
+        endDest = computeMoveVector(transformTarget.position,endDest,tween.lockX,tween.lockY,tween.lockZ,tween.percentOfDistanceToTravel,tween.moveNoCloserThan);
 
         //set direction to where the item is
         action.values.relative = false
         action.values.x = endDest.x;
         action.values.y = endDest.y;
         action.values.z = endDest.z;
-
-        log("moveToItem called dist: target:" + target + " " + tween.trackingType +  "; stopPercent:" + percentOfDistanceToTravel +  "; "   + transformEnd.position.x + " " + transformEnd.position.y + " " + transformEnd.position.z + " vs" + endDest.x + " " + endDest.y + " " + endDest.z)
+ 
+        log("moveToItem called dist: target:" + target + " " + tween.trackingType +  "; stopPercent:" + tween.percentOfDistanceToTravel 
+        +  "; moveNoCloserThan:" + ".vs."+tween.moveNoCloserThan + ";"   + transformEnd.position.x + " " + transformEnd.position.y + " " + transformEnd.position.z + " vs " + endDest.x + " " + endDest.y + " " + endDest.z)
         
         action.actionId = "move"
 

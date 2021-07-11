@@ -92,7 +92,7 @@ export function computeMoveVector(start:Vector3,endDest:Vector3,lockX:boolean,lo
         percentStopDistToUse = 0
         //dont move
         endDest = start.clone();
-    }else if(distanceWhole > 0){
+    }else if(distanceWhole > .0001){
         percentStopDistToUse = distanceDelta/distanceWhole;
         percentStopDistToUse = Math.min(percentStopDistToUse,percentOfDistanceToTravel);
         endDest = Vector3.Lerp(start, endDest, percentStopDistToUse)
