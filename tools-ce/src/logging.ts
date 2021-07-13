@@ -9,7 +9,7 @@ LOGGING_LEVEL_NUMS['DEBUG'] = 4
 LOGGING_LEVEL_NUMS['TRACE'] = 5
 
 interface LoggerConf {
-    level: string
+    level: LoggerLevel
 }
 
 export const LOGGING_CONF : LoggerConf = {

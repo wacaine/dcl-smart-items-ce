@@ -12,10 +12,32 @@
           "default": "1.1.1-alpha"
         },
         {
-          "id": "debugLoggingEnabled",
-          "label": "Debug Logging Enabled",
-          "type": "boolean",
-          "default": false
+          "id": "loggingLevel",
+          "label": "Debug Level",
+          "type": "options",
+          "options": [
+            {
+              "value": "ERROR",
+              "label": "Errors Only"
+            },
+            {
+              "value": "WARN",
+              "label": "Warnings and Errors"
+            },
+            {
+              "value": "INFO",
+              "label": "Info"
+            },
+            {
+              "value": "DEBUG",
+              "label": "Debug"
+            },
+            {
+              "value": "TRACE",
+              "label": "Trace"
+            }
+          ],
+          "default": "WARN"
         }
   ],
   "actions": [
@@ -251,6 +273,30 @@
           "default": "linear"
         },
         {
+          "id": "repeatAction",
+          "label": "Repeat Type",
+          "type": "options",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "absolute",
+              "label": "Absolute"
+            },
+            {
+              "value": "relative",
+              "label": "Relative"
+            },
+            {
+              "value": "reverse",
+              "label": "Mirror"
+            }
+          ],
+          "default": "none"
+        },
+        {
           "id": "speed",
           "label": "Speed",
           "type": "slider",
@@ -342,7 +388,6 @@
           "type": "boolean",
           "default": false
         },
-
         {
           "id": "repeatAction",
           "label": "Repeat Type",
@@ -355,10 +400,6 @@
             {
               "value": "absolute",
               "label": "Absolute"
-            },
-            {
-              "value": "relative",
-              "label": "Relative"
             },
             {
               "value": "reverse",

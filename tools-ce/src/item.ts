@@ -11,12 +11,17 @@ import {
   TweenableVO,
 } from './tween'
 import { getEntityByName,computeFaceAngle,computeMoveVector } from './utils'
-import { Logger,jsonStringifyActions,jsonStringifyActionsFull } from './logging'
+import { Logger,jsonStringifyActions,jsonStringifyActionsFull,LOGGING_CONF, LoggerLevel } from './logging'
 import { setTimeout, DelaySystem } from './delay'
 import { Animated, AnimType } from './animation'
 import { getEntityWorldPosition, getEntityWorldRotation } from './decentralandecsutils/helpers/helperfunctions'
 
-export type Props = {}
+const VERSION = "1.1.1-alpha"
+const ITEM_FULL_NAME = "Toolbox-CE v." + VERSION
+
+export type Props = {
+  loggingLevel?: LoggerLevel
+}
 
 type DelayValues = {
   timeout: number
@@ -141,7 +146,6 @@ export default class Tools implements IScript<Props> {
   removedEntities: Record<string, IEntity> = {}
   canvas = new UICanvas()
   container: UIContainerStack
-  debugEnabled: false //TODO allow configuing of this
 
   tweenSystem = new TweenSystem(Tweenable)
   tweenSystemMove = new TweenSystemMove()
@@ -162,15 +166,14 @@ export default class Tools implements IScript<Props> {
     return this.container
   }
   init() {
-    const version = "1.1.1-alpha"
-    log("Toolbox-CE version " + version + " initializing... " )
+    log(ITEM_FULL_NAME  + " initializing... " )
     //tweenSystem = new TweenSystem()
     //engine.addSystem(this.tweenSystem)
     engine.addSystem(this.tweenSystemMove)
     engine.addSystem(this.tweenSystemRotate)
     engine.addSystem(this.tweenSystemScale)
     engine.addSystem(this.delaySystem)
-    log("Toolbox-CE version " + version + " initializing DONE " )
+    log(ITEM_FULL_NAME + " initializing DONE " )
   }
 
   getEntities() {
@@ -229,7 +232,10 @@ export default class Tools implements IScript<Props> {
 
   
   spawn(host: Entity, props: Props, channel: IChannel) {
-    const logger = new Logger("item.js",{channelId:channel.id})
+    LOGGING_CONF.level = props.loggingLevel
+    log(ITEM_FULL_NAME + " logging level set to " + LOGGING_CONF.level )
+
+    const logger = new Logger("Toolbox",{channelId:channel.id})
     if(logger.isTraceEnabled()) logger.trace( "spawn","ENTRY",[host,props,channel] )
     /*
 if(props.clickable){
@@ -1078,6 +1084,7 @@ if(props.clickable){
           if( tweenMove && tweenMove !== undefined ) tweenArray.push(tweenMove)
           if( tweenRotate && tweenRotate !== undefined ) tweenArray.push(tweenRotate)
           if( tweenScale && tweenScale !== undefined ) tweenArray.push(tweenScale)
+          let addSyncable = false;
           for( const p in tweenArray){
             const tween = tweenArray[p]
             if (tween) {
@@ -1130,8 +1137,10 @@ if(props.clickable){
                 */
             //TODO sync PathData + RotationData
               entity.addComponentOrReplace(tweenable) //TODO either need to move the followCurve into tween OR sync PathData + RotateData objects too
+              addSyncable = true;
             }
           }
+          //does animation need syncable?
           if (anim) {
             const animated = new Animated({
               ...anim,
@@ -1158,6 +1167,9 @@ if(props.clickable){
                 animClip.reset()
                 break
             }
+          }
+          if(addSyncable){
+            entity.addComponentOrReplace(new Syncable()) //make new player to be able to respond
           }
         }
       }
