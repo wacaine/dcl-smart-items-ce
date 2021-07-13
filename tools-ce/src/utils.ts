@@ -91,7 +91,7 @@ export function computeMoveVector(start:Vector3,endDest:Vector3,lockX:boolean,lo
     if(distanceDelta < .0001){
         percentStopDistToUse = 0
         //dont move
-        endDest = start.clone();
+        endDest = new Vector3().copyFrom(start);
     }else if(distanceWhole > .0001){
         percentStopDistToUse = distanceDelta/distanceWhole;
         percentStopDistToUse = Math.min(percentStopDistToUse,percentOfDistanceToTravel);
