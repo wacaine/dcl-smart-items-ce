@@ -1,4 +1,5 @@
 import { getEntityByName,computeFaceAngle,computeMoveVector } from './utils'
+import { Logger,jsonStringifyActions,jsonStringifyActionsFull } from './logging'
 
 export type TweenType = 'move' | 'rotate' | 'rotate-q' | 'scale' | 'follow-path'
 export type SceneChangeAddRmType = 'add' | 'remove'
@@ -266,15 +267,20 @@ const offsetFactory = (tweenable: Tweenable, relative: Vector3) => (
 //leave player out here as static.  If I init it inside the method for some resaon the player position reports 0s first usage????
 const player = Camera.instance
 
+const logger = new Logger("tween.js",{})
+
 export class TweenSystem<T> {
   syncableGroup = engine.getComponentGroup(Syncable)
   component:ComponentConstructor<T> = null
   //let xxx:typeof Tweenable = Tweenable
   //TODO pass to constructor the group type TweenableRotate vs TweenableMove vs TweenableScale
   tweenableGroup = null;//engine.getComponentGroup(Tweenable)
+  logger = new Logger("tween.js",{})
 
   constructor(component:ComponentConstructor<T>){
-    log(this.getClassName()+".contructor() called with ")
+    this.logger = new Logger(this.getClassName(),{})
+    if(this.logger.isTraceEnabled()) this.logger.trace( "constructor","ENTRY",[component] )
+
     this.setComponent(component)
     this.setTweenableGroup(engine.getComponentGroup(this.component))
   }
@@ -293,14 +299,16 @@ export class TweenSystem<T> {
     return "TweenSystem";//this.constructor.name
   }
   removeComponent(entity:IEntity){
-    log(this.getClassName()+".removeComponent() called")
+    if(this.logger.isTraceEnabled()) this.logger.trace( "removeComponent","called", null )
     entity.removeComponent(this.component)
   }
   update(dt: number) {
+    const METHOD_NAME = "update"
     if(this.tweenableGroup.entities.length > 0){
       //log(this.getClassName() + " " + this.tweenableGroup.entities.length) 
     }
     for (const entity of this.tweenableGroup.entities) {
+      
       const tweenable = entity.getComponent(this.component)
       const transform:Transform = entity.getComponent(Transform)
 
@@ -417,7 +425,7 @@ export class TweenSystem<T> {
 
             transform.position.copyFrom(Vector3.Lerp(start, end, easingIndex))
           } else if (tweenable.transition >= 1) {
-            log('move ended')
+            if(this.logger.isDebugEnabled()) this.logger.debug( METHOD_NAME,tweenable.type + " " +  entity.name + " ended; repeatAction:" + tweenable.repeatAction, null )
             
             if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
               tweenable.transition = -1
@@ -512,7 +520,8 @@ export class TweenSystem<T> {
               Quaternion.Slerp(start, end, easingIndex)
             )
           } else if (tweenable.transition >= 1) {
-            log('rotate ended ' + tweenable.repeatAction)
+            if(this.logger.isDebugEnabled()) this.logger.debug( METHOD_NAME,tweenable.type + " " +  entity.name + " ended; repeatAction:" + tweenable.repeatAction, null )
+
             if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
               tweenable.transition = -1
               transform.rotation.copyFrom(end)
@@ -613,7 +622,8 @@ export class TweenSystem<T> {
             )
     
           } else if (tweenable.transition >= 1) {
-            log("end rotate-q")
+            if(this.logger.isDebugEnabled()) this.logger.debug( METHOD_NAME,tweenable.type + " " +  entity.name + " ended; repeatAction:" + tweenable.repeatAction, null )
+
             if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
               tweenable.transition = -1
               transform.rotation.copyFrom(end)
@@ -740,7 +750,8 @@ export class TweenSystem<T> {
               
 
           } else if (tweenable.transition >= 1) {
-            log("end follow-path ")
+            if(this.logger.isDebugEnabled()) this.logger.debug( METHOD_NAME,tweenable.type + " " +  entity.name + " ended; repeatAction:" + tweenable.repeatAction, null )
+
             if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
               tweenable.transition = -1
               //transform.rotation.copyFrom(end)
@@ -781,7 +792,8 @@ export class TweenSystem<T> {
             )
             transform.scale.copyFrom(Vector3.Lerp(start, end, easingIndex))
           } else if (tweenable.transition >= 1) {
-            log("scale ended")
+            if(this.logger.isDebugEnabled()) this.logger.debug( METHOD_NAME,tweenable.type + " " +  entity.name + " ended; repeatAction:" + tweenable.repeatAction, null )
+
             if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
               tweenable.transition = -1
               transform.scale.copyFrom(end)

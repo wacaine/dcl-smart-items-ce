@@ -11,6 +11,7 @@ import {
   TweenableVO,
 } from './tween'
 import { getEntityByName,computeFaceAngle,computeMoveVector } from './utils'
+import { Logger,jsonStringifyActions,jsonStringifyActionsFull } from './logging'
 import { setTimeout, DelaySystem } from './delay'
 import { Animated, AnimType } from './animation'
 import { getEntityWorldPosition, getEntityWorldRotation } from './decentralandecsutils/helpers/helperfunctions'
@@ -228,7 +229,8 @@ export default class Tools implements IScript<Props> {
 
   
   spawn(host: Entity, props: Props, channel: IChannel) {
-
+    const logger = new Logger("item.js",{channelId:channel.id})
+    if(logger.isTraceEnabled()) logger.trace( "spawn","ENTRY",[host,props,channel] )
     /*
 if(props.clickable){
       voxter.getEntity().addComponent(
@@ -258,7 +260,10 @@ if(props.clickable){
     */
     channel.handleAction<Tween>('sceneAddRemove', (action) => {
       const { target, sceneAddRemove, ...tween } = action.values
-      log("sceneAddRemove called " + target + " to " + sceneAddRemove)
+      const METHOD_NAME = "channel.handle.sceneAddRemove"
+      if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called " + jsonStringifyActions(action) + " " + target + " action " + sceneAddRemove,null)
+
       let entity = getEntityByName(target)
       if(sceneAddRemove=='add'&&entity==null&&this.removedEntities[target]!=null){
         entity=this.removedEntities[target]
@@ -275,7 +280,10 @@ if(props.clickable){
     } )
     channel.handleAction<Tween>('attachToItem', (action) => {
       const { target, attachToOrigin, ...tween } = action.values
-      log("attachToItem called " + target + " to " + tween.targetOfInterest + " attachOrigin:" + attachToOrigin)
+      const METHOD_NAME = "channel.handle.attachToItem"
+      if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called " + jsonStringifyActions(action) + " " + target + " to " + tween.targetOfInterest + " attachOrigin:" + attachToOrigin, null)
+
       const entityToAttach = getEntityByName(target)
       const entityTarget = getEntityByName(tween.targetOfInterest)
       if (entityToAttach && entityTarget) {
@@ -288,8 +296,8 @@ if(props.clickable){
 
 
         let onSceneReadyObservableExists = typeof onSceneReadyObservable !== 'undefined'
-        log("onSceneReadyObservable ")
-        log("onSceneReadyObservable: "+onSceneReadyObservableExists)
+        //log("onSceneReadyObservable ")
+        //log("onSceneReadyObservable: "+onSceneReadyObservableExists)
 
         if(attachToOrigin){
           let msg = "target origin pos before " + transformChild.position.x + " " + transformChild.position.y + " " + transformChild.position.z
@@ -342,8 +350,11 @@ if(props.clickable){
     } )
     channel.handleAction<Tween>('detachFromItem', (action) => {
       const { target,  ...tween } = action.values
-      log("detachFromItem called " + target + " from " + tween.targetOfInterest)
-      
+
+      const METHOD_NAME = "channel.handle.detachFromItem"
+      if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + " from " + tween.targetOfInterest , null)
+
       const entityToDetach = getEntityByName(target)
       const entityTarget = getEntityByName(tween.targetOfInterest)
       if (entityToDetach && entityTarget) {
@@ -378,10 +389,11 @@ if(props.clickable){
     } )
     
     channel.handleAction<Tween>('followItemPath', (action) => {
-      const { target
-          //returnToFirst,numberOfSegments,turnToFaceNext,lockX,lockY,lockZ,lockW,pathItem1,pathItem2,pathItem3,pathItem4,pathItem5
-          , ...tween } = action.values
-      log("followItemPath called " + target + " sender " + action.sender + " ent name " + action.entityName)
+      const { target , ...tween } = action.values
+
+      const METHOD_NAME = "channel.handle.followItemPath"
+      if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + "  " + " (" + tween.pathItem1 +","+ tween.pathItem2 +","+tween.pathItem3 +","+tween.pathItem4 +","+tween.pathItem5 +")" , null)
 
       const sender = action.sender
       const entity = getEntityByName(target)
@@ -450,7 +462,7 @@ if(props.clickable){
             existingTweenble.y === action.values.y &&
             existingTweenble.z === action.values.z
           ) {
-            log("OOTB follow-path same tween already in progress? " + action.sender + " " + action.actionId + " " + action.entityName + " " + target + " " + tween.x + " " + tween.y + " " + tween.z)
+            log("OOTB follow-path same tween already in progress? " + jsonStringifyActions(action) + " " + target + " " + tween.x + " " + tween.y + " " + tween.z)
             //return
           }
         }
@@ -497,7 +509,10 @@ if(props.clickable){
     })
     channel.handleAction<Tween>('tweenControlAction', (action) => {
       const { target, ...tween } = action.values
-      log("tweenControlAction called " + target + "  " + tween.controlMode + " (" + tween.tweenControlMove +","+ tween.tweenControlRotate +","+tween.tweenControlScale +")")
+
+      const METHOD_NAME = "channel.handle.tweenControlAction"
+      if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + "  " + tween.controlMode + " (" + tween.tweenControlMove +","+ tween.tweenControlRotate +","+tween.tweenControlScale +")" , null)
       
       const entity = getEntityByName(target)
       if (entity && entity !== undefined) {
@@ -515,6 +530,9 @@ if(props.clickable){
     channel.handleAction<Tween>('moveToPlayer', (action) => {
       const { target, ...tween } = action.values
 
+      const METHOD_NAME = "channel.handle.moveToPlayer"
+      if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + action.values.target + " -> player " + action.sender , null)
       
       const entityToMove = getEntityByName(target)
       
@@ -577,8 +595,11 @@ if(props.clickable){
     })
 
     channel.handleAction<Tween>('moveToItem', (action) => {
-      log("moveToItem called " + action.sender + " " + action.actionId + " " + action.entityName + " " + action.values.target + " -> " + action.values.targetOfInterest)
-      const { target, ...tween } = action.values
+      const { target, ...tween } = action.values 
+
+      const METHOD_NAME = "channel.handle.moveToItem"
+      if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + action.values.target + " -> " + action.values.targetOfInterest, null)
 
       const entityToMove = getEntityByName(target)
       const entityDest = getEntityByName(tween.targetOfInterest)
@@ -597,9 +618,10 @@ if(props.clickable){
         action.values.y = endDest.y;
         action.values.z = endDest.z;
  
-        log("moveToItem called dist: target:" + target + " " + tween.trackingType +  "; stopPercent:" + tween.percentOfDistanceToTravel 
-        +  "; moveNoCloserThan:" + ".vs."+tween.moveNoCloserThan + ";"   + transformEnd.position.x + " " + transformEnd.position.y + " " + transformEnd.position.z + " vs " + endDest.x + " " + endDest.y + " " + endDest.z)
+        if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "moveToItem called dist: target:" + target + " " + tween.trackingType +  "; stopPercent:" + tween.percentOfDistanceToTravel 
+                +  "; moveNoCloserThan:" + ".vs."+tween.moveNoCloserThan + ";"   + transformEnd.position.x + " " + transformEnd.position.y + " " + transformEnd.position.z + " vs " + endDest.x + " " + endDest.y + " " + endDest.z, null)
         
+        //TODO use create action insead of cloning
         action.actionId = "move"
 
         //channel.createAction("move",action.values)
@@ -611,8 +633,12 @@ if(props.clickable){
     })
 
     channel.handleAction<Tween>('faceItem', (action) => {
-      log("faceItem called")
       const { target, targetOfInterest,lockMode,lockX,lockY,lockZ,lockW, ...tween } = action.values
+
+      const METHOD_NAME = "channel.handle.faceItem"
+      if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + action.values.target + " -> " + action.values.targetOfInterest, null)
+
 
       const entity = getEntityByName(target)
       const entityLookAt = getEntityByName(targetOfInterest)
@@ -623,7 +649,6 @@ if(props.clickable){
         let lookAtTarget = new Vector3().copyFrom(lookAtTransform.position)
         
         let endRotation:Quaternion = computeFaceAngle(lookAtTarget,transform,lockMode,lockX,lockY,lockZ);
-        //const endRotationEuler:Vector3 = endRotation.clone().eulerAngles;//.clone().eulerAngles
 
         //Quaternion.Euler
         //set direction to where the item is
@@ -635,6 +660,7 @@ if(props.clickable){
         
         //action.values.destPosition = lookAtTarget;
 
+        //TODO use create action insead of cloning
         action.actionId = "rotate-q" //is rotate-q needed if we can trust eulerAngles conversion?
 
         channel.sendActions([action])
@@ -644,7 +670,11 @@ if(props.clickable){
 
     channel.handleAction<Tween>('facePlayer', (action) => {
       const { target,lockMode,lockX,lockY,lockZ,lockW, ...tween } = action.values
-      log("facePlayer called " + target + " " + action.sender + " vs " + channel.id)
+
+      const METHOD_NAME = "channel.handle.facePlayer"
+      if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + "  face player " + action.sender + " vs " + channel.id, null)
+
       if (action.sender === channel.id) {
         const entity = getEntityByName(target)
 
@@ -722,7 +752,12 @@ if(props.clickable){
     // handle actions
     channel.handleAction<Tween>('move', (action) => {
       const { target, ...tween } = action.values
-      log("OOTB move called " + action.sender + " " + action.actionId + " " + action.entityName + " " + target + " " + tween.x + " " + tween.y + " " + tween.z );//+ "  " + action.values.marker)
+
+      const METHOD_NAME = "channel.handle.move"
+      if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + jsonStringifyActions(action) + " " + target + " " + tween.x + " " + tween.y + " " + tween.z, null)
+
+
       const sender = action.sender
       const entity = getEntityByName(target)
 
@@ -738,7 +773,7 @@ if(props.clickable){
             existingTweenble.y === action.values.y &&
             existingTweenble.z === action.values.z
           ) {
-            log("OOTB move same tween already in progress? " + action.sender + " " + action.actionId + " " + action.entityName + " " + target + " " + tween.x + " " + tween.y + " " + tween.z)
+            log("OOTB move same tween already in progress? " + jsonStringifyActions(action) + " " + target + " " + tween.x + " " + tween.y + " " + tween.z)
             return
           }
         }
@@ -761,10 +796,11 @@ if(props.clickable){
     })
 
     channel.handleAction<Tween>('rotate-q', (action) => {
-      
       const { target, ...tween } = action.values
 
-      log("rotate-q called " + action.sender + " " + action.actionId + " " + action.entityName + " " + target + " " + tween.x + " " + tween.y + " " + tween.z + " " + tween.speed + " " + tween.curve)
+      const METHOD_NAME = "channel.handle.rotate-q"
+      if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + tween.x + " " + tween.y + " " + tween.z + " " + tween.speed + " " + tween.curve, null)
 
       const sender = action.sender
       const entity = getEntityByName(target)
@@ -783,7 +819,7 @@ if(props.clickable){
             existingTweenble.w === action.values.w
           ) {
             // same tween already in progress?
-            log("rotate-q same tween already in progress? " + action.sender + " " + action.actionId + " " + action.entityName + " " + target + " " + tween.x + " " + tween.y + " " + tween.z + " " + tween.speed + " " + tween.curve)
+            log("rotate-q same tween already in progress? " + jsonStringifyActions(action) + " " + target + " " + tween.x + " " + tween.y + " " + tween.z + " " + tween.speed + " " + tween.curve)
             return
           }
         }
@@ -805,10 +841,11 @@ if(props.clickable){
     })
 
     channel.handleAction<Tween>('rotate', (action) => {
-      
       const { target, ...tween } = action.values
 
-      log("OOTB rotate called " + tween.x + " " + tween.y + " " + tween.z + " " + tween.speed + " " + tween.curve)
+      const METHOD_NAME = "channel.handle.rotate"
+      if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + tween.x + " " + tween.y + " " + tween.z + " " + tween.speed + " " + tween.curve, null)
 
       const sender = action.sender
       const entity = getEntityByName(target)
@@ -826,7 +863,7 @@ if(props.clickable){
             existingTweenble.z === action.values.z
           ) {
             // same tween already in progress?
-            log("OOTB rotate same tween already in progress? " + action.sender + " " + action.actionId + " " + action.entityName + " " + target + " " + tween.x + " " + tween.y + " " + tween.z)
+            log("OOTB rotate same tween already in progress? " + jsonStringifyActions(action) + " " + target + " " + tween.x + " " + tween.y + " " + tween.z)
             return
           }
         }
@@ -849,6 +886,11 @@ if(props.clickable){
 
     channel.handleAction<Tween>('scale', (action) => {
       const { target, ...tween } = action.values
+
+      const METHOD_NAME = "channel.handle.scale"
+      if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + tween.x + " " + tween.y + " " + tween.z + " " + tween.speed + " " + tween.curve, null)
+
       const sender = action.sender
       const entity = getEntityByName(target)
       if (entity && entity !== undefined) {
@@ -886,6 +928,11 @@ if(props.clickable){
 
     channel.handleAction<AnimationValues>('animate', (action) => {
       const { target, animation, animAction, speed, loop } = action.values
+
+      const METHOD_NAME = "channel.handle.animate"
+      if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target, null)
+
       const sender = action.sender
       const entity = getEntityByName(target)
       if (entity && entity !== undefined) {
@@ -1015,6 +1062,10 @@ if(props.clickable){
 
     // sync initial values
     channel.request<SyncEntity[]>('syncEntities', (syncEntities) => {
+      const METHOD_NAME = "channel.request.syncEntities"
+      if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY", [syncEntities] )
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called ", null)
+
       for (const syncEntity of syncEntities) {
         const { entityName, transform, tweenMove, tweenRotate, tweenScale, anim } = syncEntity
         const entity = getEntityByName(entityName)
@@ -1030,7 +1081,7 @@ if(props.clickable){
           for( const p in tweenArray){
             const tween = tweenArray[p]
             if (tween) {
-              log("got sync for " + entityName + " " + tween.type)
+              //log(METHOD_NAME + DEBUG_MSG_ID + "; got sync for " + entityName + " " + tween.type)
               //CREATE RIGHT TYPE
               let tweenable = null;
               switch(tween.type){
@@ -1112,6 +1163,10 @@ if(props.clickable){
       }
     })
     channel.reply<SyncEntity[]>('syncEntities', () => {
+      const METHOD_NAME = "channel.reply.syncEntities"
+      if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",null )
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called ", null)
+
       //add to getting the hidden entities
       const entities = this.getEntities()
       const allTweenClasses:ComponentConstructor<Tweenable>[] = [Tweenable,TweenableMove,TweenableRotate,TweenableScale]
@@ -1141,14 +1196,14 @@ if(props.clickable){
           if (entity.hasComponent(component)) {
             //TODO sync PathData + RotationData
             const { channel: _, ...tween } = entity.getComponent(component)
-            log("sync check found for " + tween.type + " for " + entity.name );//+ " " + tween.)
+            //log("sync check found for " + tween.type + " for " + entity.name );//+ " " + tween.)
             //must set tween relating to tween type move,scale,rotate
             //syncEntity.tween = tween //sets all tween data
           }
         }
         if (entity.hasComponent(TweenableMove)) {
           const { channel: _, ...tween } = entity.getComponent(TweenableMove)
-          log("sync check found for TweenableMove " + " " + tween.type + " "  + entity.name  );//+ " " + tween.)
+          //log("sync check found for TweenableMove " + " " + tween.type + " "  + entity.name  );//+ " " + tween.)
           //stuff any extra things into the tween before settings it
           if(entity.hasComponent(PathData)){
             const pathData = entity.getComponent(PathData)
@@ -1159,12 +1214,12 @@ if(props.clickable){
         }
         if (entity.hasComponent(TweenableRotate)) {
           const { channel: _, ...tween } = entity.getComponent(TweenableRotate)
-          log("sync check found for TweenableRotate" + " " + tween.type + " "  + entity.name  );//+ " " + tween.)
+          //log("sync check found for TweenableRotate" + " " + tween.type + " "  + entity.name  );//+ " " + tween.)
           syncEntity.tweenRotate = tween //sets all tween data
         }
         if (entity.hasComponent(TweenableScale)) {
           const { channel: _, ...tween } = entity.getComponent(TweenableScale)
-          log("sync check found for TweenableScale" + " " + tween.type + " "  + entity.name  );//+ " " + tween.)
+          //log("sync check found for TweenableScale" + " " + tween.type + " "  + entity.name  );//+ " " + tween.)
           syncEntity.tweenScale = tween //sets all tween data
         }
         if (entity.hasComponent(Animated)) {
