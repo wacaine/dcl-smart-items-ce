@@ -3,7 +3,7 @@
 
 <img src="../docs/tools-ce/screenshots/toolbox-view.png" width="150">
 
-Here you can find feature decriptions here. Here you'll find links to:
+Here you can find action decriptions here. Here you'll find links to:
 
 
 - [Face Player](#Face-Player) 
@@ -15,6 +15,8 @@ Here you can find feature decriptions here. Here you'll find links to:
 - [Attach To Item](#Attach-To-Item) 
 - [Detach From Item](#Detach-To-Item) 
 - [Motion Control](#Motion-Control) 
+
+## How To
 
 [How to videos can be found here](https://www.youtube.com/channel/UClbjUzxLSxWPioGtQj2k2Qw)
 
@@ -59,9 +61,22 @@ Visit the Discord channel
 -->
 
 
+## New Features
+
+### New Curve Type: Instantly
+
+Instantly moves,rotates,scales and item.  There is no smooth transition from the previous position,rotation,scale to the new one.  It shifts immediatly.  For the sake of synchronicity any "onComplete" actions that follow will still have the wait XX time period to fire like all the other curve types
+
+### Improved Multiplayer
+
+Syncronious only use be registered to the initiator (the one invoking the action).  This meant if the initiator left the scene the scene state could not propagate to new players to the scene.  Now all scene members can share scene state
+
+### Improved the Move/Rotate/Scale code (TweenSystem) 
+
+Previously you could execute just one Rotation, Move, or Scale at a time.  Executing two at the same time will cancel one of them out.  Added the ability to enable 1 Rotation + 1 Move + 1 Scale all at the same time.    More than 1 of these actions at the same time will have the same cancelation effect as the first just like today but only against that action type: move, rotate or scale.  Any other action types could continue.
 
 
-## Features
+## New Actions
 
 ### Face Player
 
@@ -201,6 +216,35 @@ Will detach 1 item to another giving the attached item the position, rotation, s
 Allows a player to pause, stop, resume an action
 
 ## Types
+
+### Speed
+
+Speed is found on many of the actions.  Meaning it is how fast or the time it will take for the action to complete.  It has a value of 1-20.  The existing toolbox had a slider so I kept it for backwards compatibility sake however as the table below shows below it can be limiting.  You cannot easily pick values above 3 seconds like 4 or 6,7,8,9 nor can you go above 10.  I am considering changing this either to a type your own value or modifying the function of time.  Maybe a new field called time scale?  As to not be backwards breaking leaving this alone for now.  I considered modifying the step increment from 1 to be .5 to give a few more time options but it doubles the possible values and only gains you 2 extra time blocks of "4" and "6" seconds.  For backwards compatibility sake leaving it as is for now.
+
+It is a function of ```(speed/10)*deltaTime=1```  
+
+| Speed | Time |
+| ----- | ------ |
+|	1	 | 1 seconds	|
+|	2	 | 0.5 seconds	|
+|	3	 | 0.333333333333333 seconds	|
+|	4	 | 0.25 seconds	|
+|	5	 | 0.2 seconds	|
+|	6	 | 0.166666666666667 seconds	|
+|	7	 | 0.142857142857143 seconds	|
+|	8	 | 0.125 seconds	|
+|	9	 | 0.111111111111111 seconds	|
+|	10	 | 0.1 seconds	|
+|	11	 | 0.0909090909090909 seconds	|
+|	12	 | 0.0833333333333333 seconds	|
+|	13	 | 0.0769230769230769 seconds	|
+|	14	 | 0.0714285714285714 seconds	|
+|	15	 | 0.0666666666666667 seconds	|
+|	16	 | 0.0625 seconds	|
+|	17	 | 0.0588235294117647 seconds	|
+|	18	 | 0.0555555555555556 seconds	|
+|	19	 | 0.0526315789473684 seconds	|
+|	20	 | 0.05 seconds	|
 
 ### Curve Type
 
