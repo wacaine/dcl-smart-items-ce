@@ -198,6 +198,10 @@
               "label": "Linear"
             },
             {
+              "value": "instantaneous",
+              "label": "Instantaneous"
+            },
+            {
               "value": "easeinsine",
               "label": "Ease-in Sine"
             },
@@ -354,7 +358,7 @@
         },
         {
           "id": "returnToFirst",
-          "label": "Return To First",
+          "label": "Return To Start/Close Loop",
           "type": "boolean",
           "default": true
         },
@@ -569,6 +573,10 @@
               "label": "Linear"
             },
             {
+              "value": "instantaneous",
+              "label": "Instantaneous"
+            },
+            {
               "value": "easeinsine",
               "label": "Ease-in Sine"
             },
@@ -755,6 +763,10 @@
               "label": "Linear"
             },
             {
+              "value": "instantaneous",
+              "label": "Instantaneous"
+            },
+            {
               "value": "easeinsine",
               "label": "Ease-in Sine"
             },
@@ -907,6 +919,10 @@
             {
               "value": "linear",
               "label": "Linear"
+            },
+            {
+              "value": "instantaneous",
+              "label": "Instantaneous"
             },
             {
               "value": "easeinsine",
@@ -1074,6 +1090,10 @@
             {
               "value": "linear",
               "label": "Linear"
+            },
+            {
+              "value": "instantaneous",
+              "label": "Instantaneous"
             },
             {
               "value": "easeinsine",
@@ -1248,6 +1268,10 @@
               "label": "Linear"
             },
             {
+              "value": "instantaneous",
+              "label": "Instantaneous"
+            },
+            {
               "value": "easeinsine",
               "label": "Ease-in Sine"
             },
@@ -1419,6 +1443,10 @@
             {
               "value": "linear",
               "label": "Linear"
+            },
+            {
+              "value": "instantaneous",
+              "label": "Instantaneous"
             },
             {
               "value": "easeinsine",
