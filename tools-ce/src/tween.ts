@@ -60,7 +60,7 @@ export class PathSpeed {
 export class PathData {
   start: number = 0
   origin: number = 0
-  originVector: Vector3;//because sometimes origin is not 0???
+  //originVector: Vector3;//because sometimes origin is not 0??? TODO can we remove it from member variable? only used in constructor
   target: number = 1
   points: Vector3[]
   curvePoints: number = 25
@@ -71,22 +71,25 @@ export class PathData {
     this.points = points
     this.curvePoints = curvePoints;
     this.closeLoop = closeLoop
-    this.originVector = originVector
+    //this.originVector = originVector
     // Create a Catmull-Rom Spline curve. This curve passes through all 4 points. The total number of points in the path is set by  `curvePoints`
     this.path = Curve3.CreateCatmullRomSpline(this.points, this.curvePoints, this.closeLoop).getPoints()
 
+    this.setStartPosition(originVector)
+  }
+  setStartPosition(originVector: Vector3){
     //for some reason does not always give me curve where pt1 == path[0]
     //so must find it and resort path so it is first
     let trueOrgIdx = -1
     for(let x=0;x<this.path.length;x++){
-      let sqDistOrigins = Vector3.Distance(this.originVector, this.path[x]);
+      let sqDistOrigins = Vector3.Distance(originVector, this.path[x]);
       let vectEq = sqDistOrigins < .0001
       //log("x " + vectEq + " " + this.originVector + " " + this.path[x])
       if(vectEq && trueOrgIdx < 0){
         trueOrgIdx = x;
       }
     }
-    log("trueOrgIdx " + trueOrgIdx + " " + this.originVector + " " + this.path[trueOrgIdx])
+    log("trueOrgIdx " + trueOrgIdx + " " + originVector + " " + this.path[trueOrgIdx])
     if(trueOrgIdx > 0){
       //adjust start and end points
       //this.path = tmpPath;
@@ -446,16 +449,19 @@ export class TweenSystem<T> {
               }
               if(tweenable.repeatAction == 'relative'){
                 //log("move relative loop starting again")
-                let origPos:Vector3 = tweenable.origin;
+                const origPos:Vector3 = tweenable.origin;
 
                 //mutate end and start
                 //RISK never stopping getting too big
                 tweenable.origin=transform.position.clone()
 
                 //should scale relative to the diff between last orig and now
-                tweenable.x+=tweenable.x-origPos.x
-                tweenable.y+=tweenable.y-origPos.y
-                tweenable.z+=tweenable.z-origPos.z
+
+                if(!tweenable.relative){
+                  tweenable.x+=tweenable.x-origPos.x
+                  tweenable.y+=tweenable.y-origPos.y
+                  tweenable.z+=tweenable.z-origPos.z
+                } //else relative and no need to modify values
 
                 //go back to 0 and if over shot etc. adjusts so its smooth
                 tweenable.transition = tweenable.transition - 1;
@@ -471,9 +477,15 @@ export class TweenSystem<T> {
                 let origPos:Vector3 = tweenable.origin;
                 tweenable.origin=end.clone()
                 
-                tweenable.x=origPos.x
-                tweenable.y=origPos.y
-                tweenable.z=origPos.z
+                if(!tweenable.relative){
+                  tweenable.x=origPos.x
+                  tweenable.y=origPos.y
+                  tweenable.z=origPos.z
+                }else{ //is relative so just invert values
+                  tweenable.x *= -1
+                  tweenable.y *= -1
+                  tweenable.z *= -1
+                }
 
                 //log("scale reverse after" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
                 //  + " vs " + tweenable.x + " " + tweenable.y + " " + tweenable.z)
@@ -643,7 +655,7 @@ export class TweenSystem<T> {
               if(tweenable.repeatAction == 'relative'){
                 //log("move relative loop starting again")
                 //mutate end and start
-                tweenable.originQ=transform.rotation;//.clone() clone not needed?
+                tweenable.originQ=transform.rotation.clone() //clone not needed? but does it hurt?
                 //go back to 0 and if over shot etc. adjusts so its smooth
                 tweenable.transition = tweenable.transition - 1;
               }else{//repeat abs
@@ -664,7 +676,7 @@ export class TweenSystem<T> {
           //that way speed is normalized for all actions
 
           if (tweenable.transition >= 0 && tweenable.transition < 1) {
-            //tweenable.transition += dt * speed
+            //tweenable.transition += dt * speed //DT MUST PLAY ROLE OR WE GET OUT OF SYNC
             //segments / time to complete??? does dt play into this? should it?
             //need to decide where in the path count i am + subfraction
             let easingIndex = easingConverter(
@@ -672,7 +684,7 @@ export class TweenSystem<T> {
               tweenable.curve
             )
               //TODO figure out how to use easing curve as part of path fraction
-              let path = null;//entity.getComponent(PathData)
+              let path:PathData = null;//entity.getComponent(PathData)
 
               if(entity.hasComponent(PathData)){
                 path = entity.getComponent(PathData)
@@ -688,11 +700,11 @@ export class TweenSystem<T> {
                     path.path[path.target],
                     path.fraction
                     )
-                  path.fraction += pathSpeed/10
+                  path.fraction += pathSpeed/10 //times DT?
                 }
                 if (path.fraction > 1) {
 
-                  let sqDistOrigins = Vector3.Distance(path.originVector, path.path[path.origin])
+                  //let sqDistOrigins = Vector3.Distance(path.originVector, path.path[path.origin])
 
                   //log("follow-path next segment origin " + path.originVector + " sqDist" + sqDistOrigins + " "  + tweenable.transition + " " +  path.target  + "/"  + path.path.length + "; " + path.path[path.origin] + ">" + path.path[path.target])
                   path.origin = path.target
@@ -701,23 +713,42 @@ export class TweenSystem<T> {
                     path.target = 0
                   }
                   if(path.target == path.start){//if repeat enabled? do that?
-                    tweenable.transition = 1
+                    if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
+                      tweenable.transition = 1
+                      // send actions
+                      tweenable.channel.sendActions(tweenable.onComplete)
+                    }else{
+                      if(tweenable.repeatAction == 'relative'){
+                        //will not be a thing since it has explicit points
+                      }else if(tweenable.repeatAction == 'reverse'){
+                        //TODO reverse curve points and reset counter
+                        //reset counter
+                        path.path = path.path.reverse()
+                        path.start = (path.path.length - 1) - path.start
+
+                        path.origin = path.start;
+                        path.target = path.origin+1;
+
+                      }else{//repeat abs
+                        //reset counter
+                        path.origin = path.start;
+                        path.target = path.origin+1;
+
+                        transform.position = path.path[path.origin].clone()
+                      }
+                    }
                   }
-                  path.fraction = 0      
+                  path.fraction = path.fraction - 1 //smooth transition dont loose parts of the fraction
                 }
               
                 // Rotate gradually with a spherical lerp
-                //for (let shark of sharks.entities){
-                //let transform = shark.getComponent(Transform)
-                //let path = shark.getComponent(PathData)
                 let rotate = null;
                 if(entity.hasComponent(RotateData)){
                   rotate = entity.getComponent(RotateData)
-                  //let speed = shark.getComponent(SwimSpeed)
-                  rotate.fraction +=  pathSpeed/10
+                  rotate.fraction +=  pathSpeed/10 //times DT?
 
                   if (rotate.fraction > 1) {
-                    rotate.fraction = 0
+                    rotate.fraction = rotate.fraction - 1 //smooth transition dont loose parts of the fraction
                     rotate.originRot = transform.rotation
 
                     //log("followItemPath rot lerping  " + " " + path.path[path.target] + " " + path.path[path.origin]) 
