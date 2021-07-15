@@ -194,7 +194,6 @@ export default class Tools implements IScript<Props> {
         entity.removeComponent(component)
       }
     }
-    //TODO MUST EMIT???
   }
 
   adjustForSceneRotation(playerPosition:Vector3,entity:IEntity){
@@ -532,6 +531,8 @@ if(props.clickable){
           this.processControlAction('scale',entity,tween.controlMode,TweenableScale)
         }
       }
+
+      channel.sendActions(action.values.onComplete)
     } )
     channel.handleAction<Tween>('moveToPlayer', (action) => {
       const { target, ...tween } = action.values
@@ -593,7 +594,7 @@ if(props.clickable){
           clonedAction.values.onComplete[0].values.playerPosition=playerPosition
         }
         
-        //send rotate move so everyone else gets it
+        //send move so everyone else gets it
         channel.sendActions( [clonedAction] )
       }else{
         log("moveToPlayer called " + action.sender + " was not me " + channel.id + " so skipping" )
@@ -609,11 +610,11 @@ if(props.clickable){
 
       const entityToMove = getEntityByName(target)
       const entityDest = getEntityByName(tween.targetOfInterest)
+      //FIXME?? add if (action.sender === channel.id) { since it chains?? or dont chain action calls and do all work here
       if (entityDest && entityToMove) {
         let transformTarget = entityToMove.getComponent(Transform)
         let transformEnd = entityDest.getComponent(Transform)
 
-        let endPos:Vector3 = transformEnd.position
         let endDest:Vector3 = transformEnd.position
 
         endDest = computeMoveVector(transformTarget.position,endDest,tween.lockX,tween.lockY,tween.lockZ,tween.percentOfDistanceToTravel,tween.moveNoCloserThan);
@@ -632,9 +633,9 @@ if(props.clickable){
 
         //channel.createAction("move",action.values)
         
-        channel.sendActions(
-          [action]
-        )
+        //TODO establish origin state here incase out of sync?
+
+        channel.sendActions( [action] )
       }
     })
 
@@ -648,6 +649,7 @@ if(props.clickable){
 
       const entity = getEntityByName(target)
       const entityLookAt = getEntityByName(targetOfInterest)
+      //FIXME?? add if (action.sender === channel.id) { since it chains?? or dont chain action calls and do all work here
       if (entity && entity !== undefined) {
         let transform = entity.getComponent(Transform)
         let lookAtTransform = entityLookAt.getComponent(Transform)
