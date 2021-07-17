@@ -554,32 +554,32 @@ if(props.clickable){
 
         endDest = computeMoveVector(transformTarget.position,endDest,tween.lockX,tween.lockY,tween.lockZ,tween.percentOfDistanceToTravel,tween.moveNoCloserThan);
         
-        let clonedAction = clone(action);
-        if(!clonedAction.values.targetOfInterest){
-          clonedAction.values.targetOfInterest = action.sender
+        let clonedValues = clone(action.values);
+        if(!clonedValues.targetOfInterest){
+          clonedValues.targetOfInterest = action.sender
         }else{
-          log("moveToPlayer had sender already " + action.sender + " " + clonedAction.values.targetOfInterest + " " + channel.id)
+          log("moveToPlayer had sender already " + action.sender + " " + clonedValues.targetOfInterest + " " + channel.id)
         }
-        clonedAction.values.targetOfInterestType = 'player'
+        clonedValues.targetOfInterestType = 'player'
 
         //set direction to where the item is
-        clonedAction.values.relative = false
-        clonedAction.values.x = endDest.x;
-        clonedAction.values.y = endDest.y;
-        clonedAction.values.z = endDest.z;
+        clonedValues.relative = false
+        clonedValues.x = endDest.x;
+        clonedValues.y = endDest.y;
+        clonedValues.z = endDest.z;
         
-        clonedAction.actionId = "move"
 
-        log("moveToPlayer  cloneCheck " + action.actionId + " " + clonedAction.actionId)
-
-        //channel.createAction("move",action.values)
-        
-        if(clonedAction.values.onComplete && clonedAction.values.onComplete.length > 0){
+        if(clonedValues.onComplete && clonedValues.onComplete.length > 0){
           //can we x,y,z to start??? so dont hhvae to have extra value? but then must know action intent
           //rename to senderPosition
-          log("clonedAction.onComplete[0] " + clonedAction.values.onComplete[0].actionId )
-          clonedAction.values.onComplete[0].values.playerPosition=playerPosition
+          log("clonedAction.onComplete[0] " + clonedValues.onComplete[0].actionId )
+          clonedValues.onComplete[0].values.playerPosition=playerPosition
         }
+        
+        const clonedAction = channel.createAction("move",clonedValues)
+
+        log("moveToPlayer  cloneCheck " + action.actionId + " " + clonedAction.actionId)
+        
         
         //send move so everyone else gets it
         channel.sendActions( [clonedAction] )
@@ -608,23 +608,21 @@ if(props.clickable){
 
         endDest = computeMoveVector(transformTarget.position,endDest,tween.lockX,tween.lockY,tween.lockZ,tween.percentOfDistanceToTravel,tween.moveNoCloserThan);
 
+        let clonedValues = clone(action.values);
         //set direction to where the item is
-        action.values.relative = false
-        action.values.x = endDest.x;
-        action.values.y = endDest.y;
-        action.values.z = endDest.z;
+        clonedValues.relative = false
+        clonedValues.x = endDest.x;
+        clonedValues.y = endDest.y;
+        clonedValues.z = endDest.z;
  
         if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "moveToItem called dist: target:" + target + " " + tween.trackingType +  "; stopPercent:" + tween.percentOfDistanceToTravel 
                 +  "; moveNoCloserThan:" + ".vs."+tween.moveNoCloserThan + ";"   + transformEnd.position.x + " " + transformEnd.position.y + " " + transformEnd.position.z + " vs " + endDest.x + " " + endDest.y + " " + endDest.z, null)
         
-        //FIXME use create action insead of cloning
-        action.actionId = "move"
+        const clonedAction = channel.createAction("move",clonedValues)
 
-        //channel.createAction("move",action.values)
-        
         //TODO establish origin state here incase out of sync?
 
-        channel.sendActions( [action] )
+        channel.sendActions( [clonedAction] )
       }else{
         if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "could not find " + " " + target + " " + entityToMove + " and/or " + tween.targetOfInterest  + " " + entityDest,null)
       }
@@ -649,20 +647,20 @@ if(props.clickable){
         
         let endRotation:Quaternion = computeFaceAngle(lookAtTarget,transform,lockMode,lockX,lockY,lockZ);
 
+        let clonedValues = clone(action.values);
         //Quaternion.Euler
         //set direction to where the item is
-        action.values.x = endRotation.x;
-        action.values.y = endRotation.y;
-        action.values.z = endRotation.z;
-        action.values.w = endRotation.w; //use euler anges if change action id to rotate
+        clonedValues.x = endRotation.x;
+        clonedValues.y = endRotation.y;
+        clonedValues.z = endRotation.z;
+        clonedValues.w = endRotation.w; //use euler anges if change action id to rotate
         //clonedAction.values.destPosition = lookAtTarget;
         
         //action.values.destPosition = lookAtTarget;
 
-        //FIXME use create action insead of cloning
-        action.actionId = "rotate-q" //is rotate-q needed if we can trust eulerAngles conversion?
+        const clonedAction = channel.createAction("rotate-q",clonedValues)
 
-        channel.sendActions([action])
+        channel.sendActions([clonedAction])
       }else{
         if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "could not find " + " " + target + " " + entity + " and/or " + tween.targetOfInterest  + " " + entityLookAt,null)
       }
@@ -697,35 +695,32 @@ if(props.clickable){
 
           let lookAtTarget = playerPosition;
           
-          let clonedAction = clone(action);
-          
+          let clonedValues = clone(action.values);
+        
           let endRotation:Quaternion = computeFaceAngle(lookAtTarget,transform,lockMode,lockX,lockY,lockZ);
-          const endRotationEuler:Vector3 = endRotation.clone().eulerAngles;//.clone().eulerAngles
-          
+          //const endRotationEuler:Vector3 = endRotation.clone().eulerAngles;//.clone().eulerAngles
           
           //set direction to where the item is
-          clonedAction.values.x = endRotation.x;
-          clonedAction.values.y = endRotation.y;
-          clonedAction.values.z = endRotation.z;
-          clonedAction.values.w = endRotation.w; //use euler anges if change action id to rotate
+          clonedValues.x = endRotation.x;
+          clonedValues.y = endRotation.y;
+          clonedValues.z = endRotation.z;
+          clonedValues.w = endRotation.w; //use euler anges if change action id to rotate
           //clonedAction.values.destPosition = lookAtTarget;
 
-          //FIXME use create action
-          //hope conversion is safe within same sdk
-          clonedAction.actionId = "rotate-q" //if we get rid of rotate-q we must make sure rotate can handle playerPosition
-          
           //TODO need better recursive logic here
-          if(clonedAction.values.onComplete && clonedAction.values.onComplete.length > 0){
-            log("clonedAction.onComplete[0] " + clonedAction.values.onComplete[0].actionId )
-            clonedAction.values.onComplete[0].values.playerPosition=playerPosition
+          if(clonedValues.onComplete && clonedValues.onComplete.length > 0){
+            log("clonedAction.onComplete[0] " + clonedValues.onComplete[0].actionId )
+            clonedValues.onComplete[0].values.playerPosition=playerPosition
           }
-          if(!clonedAction.values.targetOfInterest){
-            clonedAction.values.targetOfInterest = action.sender
+          if(!clonedValues.targetOfInterest){
+            clonedValues.targetOfInterest = action.sender
           }else{
-            log("facePlayer had sender already " + action.sender + " " + clonedAction.values.targetOfInterest + " " + channel.id)
+            log("facePlayer had sender already " + action.sender + " " + clonedValues.targetOfInterest + " " + channel.id)
           }
-          clonedAction.values.targetOfInterestType = 'player'
+          clonedValues.targetOfInterestType = 'player'
           
+          const clonedAction = channel.createAction("rotate-q",clonedValues)
+
           //send rotate move so everyone else gets it
           channel.sendActions([clonedAction])
         }else{
