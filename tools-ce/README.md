@@ -168,6 +168,8 @@ The target item will move towards the player at a configurable speed for how fas
 
 The target item will follow a path of defined items. This is like move to item however you list more than one item. It will also not follow the path strictly but more of a curved path AND rotate the object-oriented facing forward along the path. 
 
+<img src="../docs/tools-ce/screenshots/follow-path-of-items.png" width="150">
+
 | Parameter                            | Description                                                                                                                      |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | Item                                 | Item to be follow the path |
@@ -183,6 +185,8 @@ The target item will follow a path of defined items. This is like move to item h
 
 Action will let you remove/add an object. Not the most elegant way to handle the user experience object/movement but has its uses. One is removed objects do not contribute to scene limitations and boost scene performance.
 
+<img src="../docs/tools-ce/screenshots/scene-add-remove.png" width="150">
+
 | Parameter                            | Description                                                                                                                      |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | Item                                 | Item to be add/removed |
@@ -192,6 +196,8 @@ Action will let you remove/add an object. Not the most elegant way to handle the
 ### Attach To Item
 
 Will attach 1 item to another giving the attached item the position, rotation, scale of the target/host object. This is very useful to move items in one group instead of individually.
+
+<img src="../docs/tools-ce/screenshots/attach-to-item.png" width="150">
 
 | Parameter                            | Description                                                                                                                      |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -203,6 +209,8 @@ Will attach 1 item to another giving the attached item the position, rotation, s
 | Z Offset                              | Adjust z position. In case attached item and parent do not line up how you like you can try too manually align how you want|
 
 ### Detach From Item
+
+<img src="../docs/tools-ce/screenshots/detach-from-item.png" width="150">
 
 Will detach 1 item to another giving the attached item the position, rotation, scale of the target/host object. This is very useful to move items in one group instead of individually. 
 
@@ -216,6 +224,8 @@ Will detach 1 item to another giving the attached item the position, rotation, s
 ### Motion Control
 
 Allows a player to pause, stop, resume an action
+
+<img src="../docs/tools-ce/screenshots/motion-control.png" width="150">
 
 ## Types
 
