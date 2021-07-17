@@ -162,6 +162,7 @@ export class TweenableVO {
   timestamp: number
   enabled: boolean
   //TODO figure out how to remove these lock param
+  lockMode:string//is this needed or is it handled before creation of the tweenVO?
   lockX:boolean//for PathData and RotationData
   lockY:boolean//for PathData and RotationData
   lockZ:boolean//for PathData and RotationData
@@ -272,12 +273,12 @@ const player = Camera.instance
 
 const logger = new Logger("tween.js",{})
 
-export class TweenSystem<T> {
+export class TweenSystem<T extends TweenableVO> {
   syncableGroup = engine.getComponentGroup(Syncable)
   component:ComponentConstructor<T> = null
   //let xxx:typeof Tweenable = Tweenable
   //TODO pass to constructor the group type TweenableRotate vs TweenableMove vs TweenableScale
-  tweenableGroup = null;//engine.getComponentGroup(Tweenable)
+  tweenableGroup:ComponentGroup = null;//engine.getComponentGroup(Tweenable)
   logger = new Logger("tween.js",{})
 
   constructor(component:ComponentConstructor<T>){
@@ -315,13 +316,14 @@ export class TweenSystem<T> {
       const tweenable = entity.getComponent(this.component)
       const transform:Transform = entity.getComponent(Transform)
 
+      //TODO consider moving trackingX into a metho method lookup?
       let trackingEntity = null
       let trackingTransform:Transform = null;
       let trackingTweenable = null;
       
     
       if(tweenable.enabled == false){
-        //log(entity.name + " disabled")
+        //log(entity['name'] + " disabled")
         continue;
       }
 
@@ -340,541 +342,17 @@ export class TweenSystem<T> {
         }
       }
       
-      //currentPosition,meet,follow
-      //addd if trackingType:'meet' and trackingName is not null and entity[trackingName].hasComponent(this.component)
-      //repeat:None|current: move point
-      //repeat:None|meet: move point future point - poll incase updates
-      //repeat:None|follow: move to current position
-      
-      //repeat:abs|current: move point
-      //repeat:abs|meet: move point future point - poll incase updates
-      //repeat:abs|follow: move to current position
-
-      //repeat:rel|current: move point
-      //repeat:rel|meet: move point future point - poll incase updates
-      //repeat:rel|follow: move to current position
-
-      //repeat:mirror|current: move point
-      //repeat:mirror|meet: move point future point - poll incase updates
-      //repeat:mirror|follow: move to current position
-        //copy that as its target point? cache it as the target?
-
-        //move uses  x,y,z
-        //rotate uses x,y,z
-        //scale uses 
-
+      //for now 1.x will not change speed function
       const speed = tweenable.speed / 10
       
-      switch (tweenable.type) {
-        case 'move': {
-          const start = tweenable.origin
-          //TODO switch to using computeMoveVector however must convert x,y,z to vector objects
-          if(tweenable.trackingType && tweenable.trackingType != 'current'){
-            if(trackingTweenable && tweenable.trackingType == 'meet' ){ //TODO move 'meet' to invoker???
-              const end = new Vector3(trackingTweenable.x, trackingTweenable.y, trackingTweenable.z)
-              const endDest = computeMoveVector(start,end,tweenable.lockX,tweenable.lockY,tweenable.lockZ,tweenable.percentOfDistanceToTravel,tweenable.moveNoCloserThan);
-              
-              tweenable.x = endDest.x
-              tweenable.y = endDest.y
-              tweenable.z = endDest.z
-            }else if(tweenable.trackingType == 'follow'){
-              let end = null;
-                
-              if(trackingTransform){
-                end = new Vector3().copyFrom(trackingTransform.position)//is copy required? flyweight for vector storage?
-              }else if(tweenable.targetOfInterestType == 'player'){
-                if(tweenable.targetOfInterest == tweenable.channel.id){
-                  //TODO add if tracking player update camera position  
-                  end = new Vector3().copyFrom(player.position)//is copy required? flyweight for vector storage?
-                }else{
-                  //not me must hope for a sync
-                }
-              }
-
-              const endDest = computeMoveVector(start,end,tweenable.lockX,tweenable.lockY,tweenable.lockZ,tweenable.percentOfDistanceToTravel,tweenable.moveNoCloserThan);
-
-              tweenable.x = endDest.x
-              tweenable.y = endDest.y
-              tweenable.z = endDest.z
-
-              //keep updating origin for smooth follow?
-              //TODO why does move require setting this but not rotateq?
-              if(tweenable.repeatAction == 'relative'){
-                if(!tweenable.origin || tweenable.origin !== Vector3){
-                  tweenable.origin = new Vector3()
-                }
-                tweenable.origin.copyFrom(transform.position)
-              }
-              
-            }
-          }
-          
-          const offset = offsetFactory(tweenable, start)
-          const end = new Vector3(offset('x'), offset('y'), offset('z'))
-
-          if (tweenable.transition >= 0 && tweenable.transition < 1) {
-            tweenable.transition += dt * speed
-            
-            let easingIndex = 0;
-            if(tweenable.repeatAction == 'relative' && tweenable.trackingType && tweenable.trackingType == 'follow'){
-              //when doing follow should not be on a curve
-              easingIndex = dt * speed
-            }else{
-              easingIndex = easingConverter(
-                tweenable.transition,
-                tweenable.curve
-              )
-            }
-
-            transform.position.copyFrom(Vector3.Lerp(start, end, easingIndex))
-          } else if (tweenable.transition >= 1) {
-            if(this.logger.isDebugEnabled()) this.logger.debug( METHOD_NAME,tweenable.type + " " +  entity.name + " ended; repeatAction:" + tweenable.repeatAction, null )
-            
-            if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
-              tweenable.transition = -1
-              transform.position.copyFrom(end)
-              //log('rotate calling remove entity ' + this.constructor.name)
-              this.removeComponent(entity)
-
-              // send actions
-              tweenable.channel.sendActions(tweenable.onComplete)
-            }else{
-              if(tweenable.targetOfInterestType == 'player'){
-                if(tweenable.targetOfInterest == tweenable.channel.id){
-                  //TODO add if tracking player update camera position  
-                  //send sync action for new position
-                }else{
-                  //not me must hope for a sync
-                }
-              }
-              if(tweenable.repeatAction == 'relative'){
-                //log("move relative loop starting again")
-                const origPos:Vector3 = tweenable.origin;
-
-                //mutate end and start
-                //RISK never stopping getting too big
-                tweenable.origin=transform.position.clone()
-
-                //should scale relative to the diff between last orig and now
-
-                if(!tweenable.relative){
-                  tweenable.x+=tweenable.x-origPos.x
-                  tweenable.y+=tweenable.y-origPos.y
-                  tweenable.z+=tweenable.z-origPos.z
-                } //else relative and no need to modify values
-
-                //go back to 0 and if over shot etc. adjusts so its smooth
-                tweenable.transition = tweenable.transition - 1;
-              }else if(tweenable.repeatAction == 'reverse'){
-                //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
-                tweenable.transition = tweenable.transition - 1;
-                transform.position.copyFrom(end)
-
-                //log("scale reverse before" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
-                //  + " vs " + tweenable.x + " " + tweenable.y + " " + tweenable.z)
-
-                //mutate end and start
-                let origPos:Vector3 = tweenable.origin;
-                tweenable.origin=end.clone()
-                
-                if(!tweenable.relative){
-                  tweenable.x=origPos.x
-                  tweenable.y=origPos.y
-                  tweenable.z=origPos.z
-                }else{ //is relative so just invert values
-                  tweenable.x *= -1
-                  tweenable.y *= -1
-                  tweenable.z *= -1
-                }
-
-                //log("scale reverse after" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
-                //  + " vs " + tweenable.x + " " + tweenable.y + " " + tweenable.z)
-              }else{//repeat abs
-                //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
-                tweenable.transition = tweenable.transition - 1;
-              }
-            }
-
-          }
-          break
-        }
-        case 'rotate': {
-          if(tweenable.trackingType && tweenable.trackingType != 'current'){
-            if(trackingTweenable && tweenable.trackingType == 'meet'){
-              if(!tweenable.lockX) tweenable.x = trackingTweenable.x
-              if(!tweenable.lockY) tweenable.y = trackingTweenable.y
-              if(!tweenable.lockZ) tweenable.z = trackingTweenable.z
-            }else if( trackingTransform && tweenable.trackingType == 'follow'){
-              const eulerAngles = trackingTransform.rotation.eulerAngles;
-              if(!tweenable.lockX) tweenable.x = eulerAngles.x
-              if(!tweenable.lockY) tweenable.y = eulerAngles.y
-              if(!tweenable.lockZ) tweenable.z = eulerAngles.z
-
-              //keep updating origin for smooth follow?!?!
-            }
-          }
-          const start = Quaternion.Euler(
-            tweenable.origin.x,
-            tweenable.origin.y,
-            tweenable.origin.z
-          )
-          const end = start.multiply(
-            Quaternion.Euler(tweenable.x, tweenable.y, tweenable.z)
-          )
-
-          if (tweenable.transition >= 0 && tweenable.transition < 1) {
-            tweenable.transition += dt * speed
-            let easingIndex = easingConverter(
-              tweenable.transition,
-              tweenable.curve
-            )
-            transform.rotation.copyFrom(
-              Quaternion.Slerp(start, end, easingIndex)
-            )
-          } else if (tweenable.transition >= 1) {
-            if(this.logger.isDebugEnabled()) this.logger.debug( METHOD_NAME,tweenable.type + " " +  entity.name + " ended; repeatAction:" + tweenable.repeatAction, null )
-
-            if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
-              tweenable.transition = -1
-              transform.rotation.copyFrom(end)
-              this.removeComponent(entity)
-
-              // send actions
-              tweenable.channel.sendActions(tweenable.onComplete)
-            }else{
-              if(tweenable.repeatAction == 'relative'){
-                //mutate end and start
-                let rotEuler:Vector3 = transform.rotation.clone().eulerAngles;
-                tweenable.origin=rotEuler
-                //go back to 0 and if over shot etc. adjusts so its smooth
-                tweenable.transition = tweenable.transition - 1;
-              }else if(tweenable.repeatAction == 'reverse'){
-                //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
-                tweenable.transition = tweenable.transition - 1;
-                transform.rotation.copyFrom(end)
-
-                //log("rotate repeat before" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
-                //  + " vs " + tweenable.x + " " + tweenable.y + " " + tweenable.z)
-
-                //mutate end and start
-                tweenable.origin=end.clone().eulerAngles
-                
-                //euler rotation is relative so just negate it
-                tweenable.x=tweenable.x*-1
-                tweenable.y=tweenable.y*-1
-                tweenable.z=tweenable.z*-1
-
-                //log("rotate repeat after" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
-                //  + " vs " + tweenable.x + " " + tweenable.y + " " + tweenable.z)
-              }else{//repeat abs
-                //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
-                tweenable.transition = tweenable.transition - 1;
-              }
-            }
-          }
-          break
-        }
-        case 'rotate-q': {
-          if(tweenable.trackingType && tweenable.trackingType != 'current'){
-            if(trackingTweenable && tweenable.trackingType == 'meet'){
-              let lookAtTarget = new Vector3(trackingTweenable.x,trackingTweenable.y,trackingTweenable.z);//flyweight to avoid new object each time?
-              let endRotation:Quaternion = computeFaceAngle(lookAtTarget,transform,tweenable.lockMode,tweenable.lockX,tweenable.lockY,tweenable.lockZ);
-              tweenable.x = endRotation.x
-              tweenable.y = endRotation.y
-              tweenable.z = endRotation.z
-              tweenable.w = endRotation.w
-            }else if(tweenable.trackingType == 'follow'){
-              let lookAtTarget = new Vector3().copyFrom(trackingTransform.position)
-                
-              if(trackingTransform){
-                lookAtTarget = new Vector3().copyFrom(trackingTransform.position)//is copy required? flyweight for vector storage?
-              }else if(tweenable.targetOfInterestType == 'player'){
-                if(tweenable.targetOfInterest == tweenable.channel.id){
-                  //TODO add if tracking player update camera position  
-                  lookAtTarget = new Vector3().copyFrom(player.position)//is copy required? flyweight for vector storage?
-                }else{
-                  //not me must hope for a sync
-                }
-              }
-              
-              let endRotation:Quaternion = computeFaceAngle(lookAtTarget,transform,tweenable.lockMode,tweenable.lockX,tweenable.lockY,tweenable.lockZ);
-              tweenable.x = endRotation.x
-              tweenable.y = endRotation.y
-              tweenable.z = endRotation.z
-              tweenable.w = endRotation.w
-
-              //keep syncing origin for smooth follow???
-              //TODO why does move require setting this but not rotateq?
-              //its cuz computeFaceAngle takes object itself instead of a copied var of position/rotate
-              //if(tweenable.repeatAction == 'relative'){
-                //tweenable.originQ = transform.rotation
-              //}
-            }
-          }
-          //log("rotate-q " + tweenable.transition +  " "  + tweenable.destPosition +  " " + tweenable.x +  " " + tweenable.y +  " " + tweenable.z +  " " + tweenable.w)
-          const start = tweenable.originQ //
-          const end = new Quaternion(tweenable.x, tweenable.y, tweenable.z,tweenable.w)
-          
-          if (tweenable.transition >= 0 && tweenable.transition < 1) {
-            tweenable.transition += dt * speed
-
-            let easingIndex = 0;
-            if(tweenable.repeatAction == 'relative' && tweenable.trackingType && tweenable.trackingType == 'follow'){
-              //when doing follow should not be on a curve
-              easingIndex = dt * speed
-            }else{
-              easingIndex = easingConverter(
-                tweenable.transition,
-                tweenable.curve
-              )
-            }
-            
-            transform.rotation.copyFrom(
-              Quaternion.Slerp(start, end, easingIndex)
-            )
-    
-          } else if (tweenable.transition >= 1) {
-            if(this.logger.isDebugEnabled()) this.logger.debug( METHOD_NAME,tweenable.type + " " +  entity.name + " ended; repeatAction:" + tweenable.repeatAction, null )
-
-            if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
-              tweenable.transition = -1
-              transform.rotation.copyFrom(end)
-              this.removeComponent(entity)
-
-              // send actions
-              tweenable.channel.sendActions(tweenable.onComplete)
-            }else{
-              if(tweenable.targetOfInterestType == 'player'){
-                if(tweenable.targetOfInterest == tweenable.channel.id){
-                  //TODO add if tracking player update camera position  
-                  //send sync action for new position
-                }else{
-                  //not me must hope for a sync
-                }
-              }
-              if(tweenable.repeatAction == 'relative'){
-                //log("move relative loop starting again")
-                //mutate end and start
-                tweenable.originQ=transform.rotation.clone() //clone not needed? but does it hurt?
-                //go back to 0 and if over shot etc. adjusts so its smooth
-                tweenable.transition = tweenable.transition - 1;
-              }else{//repeat abs
-                //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
-                tweenable.transition = tweenable.transition - 1;
-              }
-            }
-          }
-          break
-        }
-        
-        case 'follow-path': {
-          
-          //const start = tweenable.originQ
-          //const end = new Quaternion(tweenable.x, tweenable.y, tweenable.z,tweenable.w)
-          
-          //TODO adjust speed to match norms.  so divide speed additionally by segment count
-          //that way speed is normalized for all actions
-
-          if (tweenable.transition >= 0 && tweenable.transition < 1) {
-            //tweenable.transition += dt * speed //DT MUST PLAY ROLE OR WE GET OUT OF SYNC
-            //segments / time to complete??? does dt play into this? should it?
-            //need to decide where in the path count i am + subfraction
-            let easingIndex = easingConverter(
-              tweenable.transition,
-              tweenable.curve
-            )
-              //TODO figure out how to use easing curve as part of path fraction
-              let path:PathData = null;//entity.getComponent(PathData)
-
-              if(entity.hasComponent(PathData)){
-                path = entity.getComponent(PathData)
-              
-                //log("follow-path " + tweenable.transition + " " +  path.target  + "/"  + path.path.length + " " + tweenable.transition + " dt " + dt + " speed:" + speed + " path.fraction" + path.fraction )
-              
-                let pathSpeed:number = speed;//TODO use class PathSpeed
-                //speed = shark.getComponent(SwimSpeed)
-                //log("followItemPath move lerping")
-                if(true){//if (path.fraction < 1) {
-                  transform.position = Vector3.Lerp(
-                    path.path[path.origin],
-                    path.path[path.target],
-                    path.fraction
-                    )
-                  path.fraction += pathSpeed/10 //times DT?
-                }
-                if (path.fraction > 1) {
-
-                  //let sqDistOrigins = Vector3.Distance(path.originVector, path.path[path.origin])
-
-                  //log("follow-path next segment origin " + path.originVector + " sqDist" + sqDistOrigins + " "  + tweenable.transition + " " +  path.target  + "/"  + path.path.length + "; " + path.path[path.origin] + ">" + path.path[path.target])
-                  path.origin = path.target
-                  path.target += 1
-                  if (path.target >= path.path.length-1) { //go back to first target
-                    path.target = 0
-                  }
-                  if(path.target == path.start){//if repeat enabled? do that?
-                    if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
-                      tweenable.transition = 1
-                      // send actions
-                      tweenable.channel.sendActions(tweenable.onComplete)
-                    }else{
-                      if(tweenable.repeatAction == 'relative'){
-                        //will not be a thing since it has explicit points
-                      }else if(tweenable.repeatAction == 'reverse'){
-                        //TODO reverse curve points and reset counter
-                        //reset counter
-                        path.path = path.path.reverse()
-                        path.start = (path.path.length - 1) - path.start
-
-                        path.origin = path.start;
-                        path.target = path.origin+1;
-
-                      }else{//repeat abs
-                        //reset counter
-                        path.origin = path.start;
-                        path.target = path.origin+1;
-
-                        transform.position = path.path[path.origin].clone()
-                      }
-                    }
-                  }
-                  path.fraction = path.fraction - 1 //smooth transition dont loose parts of the fraction
-                }
-              
-                // Rotate gradually with a spherical lerp
-                let rotate = null;
-                if(entity.hasComponent(RotateData)){
-                  rotate = entity.getComponent(RotateData)
-                  rotate.fraction +=  pathSpeed/10 //times DT?
-
-                  if (rotate.fraction > 1) {
-                    rotate.fraction = rotate.fraction - 1 //smooth transition dont loose parts of the fraction
-                    rotate.originRot = transform.rotation
-
-                    //log("followItemPath rot lerping  " + " " + path.path[path.target] + " " + path.path[path.origin]) 
-
-                    let direction = path.path[path.target].subtract(path.path[path.origin]).normalize()
-                    rotate.targetRot = Quaternion.LookRotation(direction)
-                    
-                    if(rotate.lockX) rotate.targetRot.x = rotate.startingRot.x
-                    if(rotate.lockY) rotate.targetRot.y = rotate.startingRot.y
-                    if(rotate.lockZ) rotate.targetRot.z = rotate.startingRot.z
-                    if(rotate.lockW) rotate.targetRot.w = rotate.startingRot.w //if using euler dont set W use urler rotation
-                  } 
-                  //log("followItemPath rot slerping  " + " " + rotate.originRot + " " + rotate.targetRot) 
-                  if(rotate.originRot&&rotate.targetRot){
-                    transform.rotation = Quaternion.Slerp(
-                      rotate.originRot,
-                      rotate.targetRot,
-                      rotate.fraction
-                    )
-                  }else{
-                    //should it be blank off the bat?
-                    //blank before moving first segment normal?
-                  }
-                }
-                
-              //}
-              }else{
-                log("followItemPath not path yet")
-              }
-              
-
-          } else if (tweenable.transition >= 1) {
-            if(this.logger.isDebugEnabled()) this.logger.debug( METHOD_NAME,tweenable.type + " " +  entity.name + " ended; repeatAction:" + tweenable.repeatAction, null )
-
-            if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
-              tweenable.transition = -1
-              //transform.rotation.copyFrom(end)
-              this.removeComponent(entity)
-              entity.removeComponent(PathData)
-              entity.removeComponent(RotateData)
-
-              // send actions
-              tweenable.channel.sendActions(tweenable.onComplete)
-            }else{
-              //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
-              tweenable.transition = tweenable.transition - 1;
-            }
-          }
-          break
-        }
-        case 'scale': {
-          if(tweenable.trackingType && tweenable.trackingType != 'current'){
-            if(tweenable.trackingType == 'meet' && trackingTweenable){
-              tweenable.x = trackingTweenable.x
-              tweenable.y = trackingTweenable.y
-              tweenable.z = trackingTweenable.z
-            }else if(tweenable.trackingType == 'follow' && trackingTransform){
-              tweenable.x = trackingTransform.scale.x
-              tweenable.y = trackingTransform.scale.y
-              tweenable.z = trackingTransform.scale.z
-            }
-          }
-          const start = tweenable.origin
-          const offset = offsetFactory(tweenable, start)
-          const end = new Vector3(offset('x'), offset('y'), offset('z'))
-
-          if (tweenable.transition >= 0 && tweenable.transition < 1) {
-            tweenable.transition += dt * speed
-            let easingIndex = easingConverter(
-              tweenable.transition,
-              tweenable.curve
-            )
-            transform.scale.copyFrom(Vector3.Lerp(start, end, easingIndex))
-          } else if (tweenable.transition >= 1) {
-            if(this.logger.isDebugEnabled()) this.logger.debug( METHOD_NAME,tweenable.type + " " +  entity.name + " ended; repeatAction:" + tweenable.repeatAction, null )
-
-            if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
-              tweenable.transition = -1
-              transform.scale.copyFrom(end)
-              this.removeComponent(entity)
-
-              // send actions
-              tweenable.channel.sendActions(tweenable.onComplete)
-            }else{
-              if(tweenable.repeatAction == 'relative'){
-                let origScale:Vector3 = tweenable.origin;
-
-                //mutate end and start
-                //RISK never stopping getting too big
-                tweenable.origin=transform.scale.clone()
-
-                //should scale relative to the diff between last orig and now
-                tweenable.x+=tweenable.x-origScale.x
-                tweenable.y+=tweenable.y-origScale.y
-                tweenable.z+=tweenable.z-origScale.z
-
-                //go back to 0 and if over shot etc. adjusts so its smooth
-                tweenable.transition = tweenable.transition - 1;
-              }else if(tweenable.repeatAction == 'reverse'){
-                //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
-                tweenable.transition = tweenable.transition - 1;
-                transform.scale.copyFrom(end)
-
-                //log("scale reverse before" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
-                //  + " vs " + tweenable.x + " " + tweenable.y + " " + tweenable.z)
-
-                //mutate end and start
-                let origScale:Vector3 = tweenable.origin;
-                tweenable.origin=end.clone()
-                
-                tweenable.x=origScale.x
-                tweenable.y=origScale.y
-                tweenable.z=origScale.z
-
-                //log("scale reverse after" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
-                //  + " vs " + tweenable.x + " " + tweenable.y + " " + tweenable.z)
-              }else{//repeat abs
-                //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
-                tweenable.transition = tweenable.transition - 1;
-              }
-            }
-          }
-          break
-        }
-      }
+      
+      this.updateApply(dt,entity,tweenable,transform,speed,trackingEntity,trackingTransform,trackingTweenable)      
     }
+  }
+  // this method exists so that each system can implement their own logic
+  // having everything in the base class method in a switch statement was not great coding practices
+  updateApply(dt: number,  entity: IEntity, tweenable: any, transform: Transform, speed: number, trackingEntity: any, trackingTransform: Transform, trackingTweenable: any) {
+    throw new Error('Method not implemented.') //expects to be overridden
   }
 }
 
@@ -887,6 +365,271 @@ export class TweenSystemMove extends TweenSystem<TweenableMove>{
   getClassName():string{ //if minified not sure can trust this?!?!
     return "TweenSystemMove";//this.constructor.name
   }
+  //START MOVE SYSTEM
+  updateApply(dt: number, entity: IEntity, tweenable: any, transform: Transform, speed: number, trackingEntity: any, trackingTransform: Transform, trackingTweenable: any) {
+    const METHOD_NAME = "updateApply"
+
+    switch (tweenable.type) {
+      case 'move': {
+        const start = tweenable.origin
+        //TODO switch to using computeMoveVector however must convert x,y,z to vector objects
+        if(tweenable.trackingType && tweenable.trackingType != 'current'){
+          if(trackingTweenable && tweenable.trackingType == 'meet' ){ //TODO move 'meet' to invoker???
+            const end = new Vector3(trackingTweenable.x, trackingTweenable.y, trackingTweenable.z)
+            const endDest = computeMoveVector(start,end,tweenable.lockX,tweenable.lockY,tweenable.lockZ,tweenable.percentOfDistanceToTravel,tweenable.moveNoCloserThan);
+            
+            tweenable.x = endDest.x
+            tweenable.y = endDest.y
+            tweenable.z = endDest.z
+          }else if(tweenable.trackingType == 'follow'){
+            let end = null;
+              
+            if(trackingTransform){
+              end = new Vector3().copyFrom(trackingTransform.position)//is copy required? flyweight for vector storage?
+            }else if(tweenable.targetOfInterestType == 'player'){
+              if(tweenable.targetOfInterest == tweenable.channel.id){
+                //TODO add if tracking player update camera position  
+                end = new Vector3().copyFrom(player.position)//is copy required? flyweight for vector storage?
+              }else{
+                //not me must hope for a sync
+              }
+            }
+
+            const endDest = computeMoveVector(start,end,tweenable.lockX,tweenable.lockY,tweenable.lockZ,tweenable.percentOfDistanceToTravel,tweenable.moveNoCloserThan);
+
+            tweenable.x = endDest.x
+            tweenable.y = endDest.y
+            tweenable.z = endDest.z
+
+            //keep updating origin for smooth follow?
+            //TODO why does move require setting this but not rotateq?
+            if(tweenable.repeatAction == 'relative'){
+              if(!tweenable.origin || tweenable.origin !== Vector3){
+                tweenable.origin = new Vector3()
+              }
+              tweenable.origin.copyFrom(transform.position)
+            }
+            
+          }
+        }
+        
+        const offset = offsetFactory(tweenable, start)
+        const end = new Vector3(offset('x'), offset('y'), offset('z'))
+
+        if (tweenable.transition >= 0 && tweenable.transition < 1) {
+          tweenable.transition += dt * speed
+          
+          let easingIndex = 0;
+          if(tweenable.repeatAction == 'relative' && tweenable.trackingType && tweenable.trackingType == 'follow'){
+            //when doing follow should not be on a curve
+            easingIndex = dt * speed
+          }else{
+            easingIndex = easingConverter(
+              tweenable.transition,
+              tweenable.curve
+            )
+          }
+
+          transform.position.copyFrom(Vector3.Lerp(start, end, easingIndex))
+        } else if (tweenable.transition >= 1) {
+          if(this.logger.isDebugEnabled()) this.logger.debug( METHOD_NAME,tweenable.type + " " +  entity['name'] + " ended; repeatAction:" + tweenable.repeatAction, null )
+          
+          if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
+            tweenable.transition = -1
+            transform.position.copyFrom(end)
+            this.removeComponent(entity)
+
+            // send actions
+            tweenable.channel.sendActions(tweenable.onComplete)
+          }else{
+            if(tweenable.targetOfInterestType == 'player'){
+              if(tweenable.targetOfInterest == tweenable.channel.id){
+                //TODO add if tracking player update camera position  
+                //send sync action for new position
+              }else{
+                //not me must hope for a sync
+              }
+            }
+            if(tweenable.repeatAction == 'relative'){
+              //log("move relative loop starting again")
+              const origPos:Vector3 = tweenable.origin;
+
+              //mutate end and start
+              //RISK never stopping getting too big
+              tweenable.origin=transform.position.clone()
+
+              //should scale relative to the diff between last orig and now
+
+              if(!tweenable.relative){
+                tweenable.x+=tweenable.x-origPos.x
+                tweenable.y+=tweenable.y-origPos.y
+                tweenable.z+=tweenable.z-origPos.z
+              } //else relative and no need to modify values
+
+              //go back to 0 and if over shot etc. adjusts so its smooth
+              tweenable.transition = tweenable.transition - 1;
+            }else if(tweenable.repeatAction == 'reverse'){
+              //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
+              tweenable.transition = tweenable.transition - 1;
+              transform.position.copyFrom(end)
+
+              //mutate end and start
+              let origPos:Vector3 = tweenable.origin;
+              tweenable.origin=end.clone()
+              
+              if(!tweenable.relative){
+                tweenable.x=origPos.x
+                tweenable.y=origPos.y
+                tweenable.z=origPos.z
+              }else{ //is relative so just invert values
+                tweenable.x *= -1
+                tweenable.y *= -1
+                tweenable.z *= -1
+              }
+
+            }else{//repeat abs
+              //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
+              tweenable.transition = tweenable.transition - 1;
+            }
+          }
+        }
+        break;
+      }
+      //TODO move to MOVE
+      case 'follow-path': {
+          
+        //const start = tweenable.originQ
+        //const end = new Quaternion(tweenable.x, tweenable.y, tweenable.z,tweenable.w)
+        
+        //TODO adjust speed to match norms.  so divide speed additionally by segment count
+        //that way speed is normalized for all actions
+
+        if (tweenable.transition >= 0 && tweenable.transition < 1) {
+          //tweenable.transition += dt * speed //DT MUST PLAY ROLE OR WE GET OUT OF SYNC
+          //segments / time to complete??? does dt play into this? should it?
+          //need to decide where in the path count i am + subfraction
+          let easingIndex = easingConverter(
+            tweenable.transition,
+            tweenable.curve
+          )
+            //TODO figure out how to use easing curve as part of path fraction
+            let path:PathData = null;//entity.getComponent(PathData)
+
+            if(entity.hasComponent(PathData)){
+              path = entity.getComponent(PathData)
+            
+              //log("follow-path " + tweenable.transition + " " +  path.target  + "/"  + path.path.length + " " + tweenable.transition + " dt " + dt + " speed:" + speed + " path.fraction" + path.fraction )
+            
+              let pathSpeed:number = speed;//TODO use class PathSpeed
+              //speed = shark.getComponent(SwimSpeed)
+              //log("followItemPath move lerping")
+              if(true){//if (path.fraction < 1) {
+                transform.position = Vector3.Lerp(
+                  path.path[path.origin],
+                  path.path[path.target],
+                  path.fraction
+                  )
+                path.fraction += pathSpeed/10 //times DT?
+              }
+              if (path.fraction > 1) {
+
+                //let sqDistOrigins = Vector3.Distance(path.originVector, path.path[path.origin])
+
+                //log("follow-path next segment origin " + path.originVector + " sqDist" + sqDistOrigins + " "  + tweenable.transition + " " +  path.target  + "/"  + path.path.length + "; " + path.path[path.origin] + ">" + path.path[path.target])
+                path.origin = path.target
+                path.target += 1
+                if (path.target >= path.path.length-1) { //go back to first target
+                  path.target = 0
+                }
+                if(path.target == path.start){//if repeat enabled? do that?
+                  if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
+                    tweenable.transition = 1
+                    // send actions
+                    tweenable.channel.sendActions(tweenable.onComplete)
+                  }else{
+                    if(tweenable.repeatAction == 'relative'){
+                      //will not be a thing since it has explicit points
+                    }else if(tweenable.repeatAction == 'reverse'){
+                      //TODO reverse curve points and reset counter
+                      //reset counter
+                      path.path = path.path.reverse()
+                      path.start = (path.path.length - 1) - path.start
+
+                      path.origin = path.start;
+                      path.target = path.origin+1;
+
+                    }else{//repeat abs
+                      //reset counter
+                      path.origin = path.start;
+                      path.target = path.origin+1;
+
+                      transform.position = path.path[path.origin].clone()
+                    }
+                  }
+                }
+                path.fraction = path.fraction - 1 //smooth transition dont loose parts of the fraction
+              }
+            
+              // Rotate gradually with a spherical lerp
+              let rotate = null;
+              if(entity.hasComponent(RotateData)){
+                rotate = entity.getComponent(RotateData)
+                rotate.fraction +=  pathSpeed/10 //times DT?
+
+                if (rotate.fraction > 1) {
+                  rotate.fraction = rotate.fraction - 1 //smooth transition dont loose parts of the fraction
+                  rotate.originRot = transform.rotation
+
+                  //log("followItemPath rot lerping  " + " " + path.path[path.target] + " " + path.path[path.origin]) 
+
+                  let direction = path.path[path.target].subtract(path.path[path.origin]).normalize()
+                  rotate.targetRot = Quaternion.LookRotation(direction)
+                  
+                  if(rotate.lockX) rotate.targetRot.x = rotate.startingRot.x
+                  if(rotate.lockY) rotate.targetRot.y = rotate.startingRot.y
+                  if(rotate.lockZ) rotate.targetRot.z = rotate.startingRot.z
+                  if(rotate.lockW) rotate.targetRot.w = rotate.startingRot.w //if using euler dont set W use urler rotation
+                } 
+                //log("followItemPath rot slerping  " + " " + rotate.originRot + " " + rotate.targetRot) 
+                if(rotate.originRot&&rotate.targetRot){
+                  transform.rotation = Quaternion.Slerp(
+                    rotate.originRot,
+                    rotate.targetRot,
+                    rotate.fraction
+                  )
+                }else{
+                  //should it be blank off the bat?
+                  //blank before moving first segment normal?
+                }
+              }
+              
+            //}
+            }else{
+              log("followItemPath not path yet")
+            }
+            
+
+        } else if (tweenable.transition >= 1) {
+          if(this.logger.isDebugEnabled()) this.logger.debug( METHOD_NAME,tweenable.type + " " +  entity['name'] + " ended; repeatAction:" + tweenable.repeatAction, null )
+
+          if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
+            tweenable.transition = -1
+            //transform.rotation.copyFrom(end)
+            this.removeComponent(entity)
+            if(entity.hasComponent(PathData)) entity.removeComponent(PathData)
+            if(entity.hasComponent(RotateData)) entity.removeComponent(RotateData)
+
+            // send actions
+            tweenable.channel.sendActions(tweenable.onComplete)
+          }else{
+            //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
+            tweenable.transition = tweenable.transition - 1;
+          }
+        }
+        break
+      }
+    }
+  }//END MOVE SYSTEM
 }
 export class TweenSystemRotate extends TweenSystem<TweenableRotate>{
   constructor(){
@@ -896,6 +639,180 @@ export class TweenSystemRotate extends TweenSystem<TweenableRotate>{
   getClassName():string{ //if minified not sure can trust this?!?!
     return "TweenSystemRotate";//this.constructor.name
   }
+  //START ROTATE SYSTEM
+  updateApply(dt: number, entity: IEntity, tweenable: any, transform: Transform, speed: number, trackingEntity: any, trackingTransform: Transform, trackingTweenable: any) {
+    const METHOD_NAME = "updateApply"
+    switch (tweenable.type) {
+      case 'rotate': {
+        if(tweenable.trackingType && tweenable.trackingType != 'current'){
+          if(trackingTweenable && tweenable.trackingType == 'meet'){
+            if(!tweenable.lockX) tweenable.x = trackingTweenable.x
+            if(!tweenable.lockY) tweenable.y = trackingTweenable.y
+            if(!tweenable.lockZ) tweenable.z = trackingTweenable.z
+          }else if( trackingTransform && tweenable.trackingType == 'follow'){
+            const eulerAngles = trackingTransform.rotation.eulerAngles;
+            if(!tweenable.lockX) tweenable.x = eulerAngles.x
+            if(!tweenable.lockY) tweenable.y = eulerAngles.y
+            if(!tweenable.lockZ) tweenable.z = eulerAngles.z
+
+            //keep updating origin for smooth follow?!?!
+          }
+        }
+        const start = Quaternion.Euler(
+          tweenable.origin.x,
+          tweenable.origin.y,
+          tweenable.origin.z
+        )
+        const end = start.multiply(
+          Quaternion.Euler(tweenable.x, tweenable.y, tweenable.z)
+        )
+
+        if (tweenable.transition >= 0 && tweenable.transition < 1) {
+          tweenable.transition += dt * speed
+          let easingIndex = easingConverter(
+            tweenable.transition,
+            tweenable.curve
+          )
+          transform.rotation.copyFrom(
+            Quaternion.Slerp(start, end, easingIndex)
+          )
+        } else if (tweenable.transition >= 1) {
+          if(this.logger.isDebugEnabled()) this.logger.debug( METHOD_NAME,tweenable.type + " " +  entity['name'] + " ended; repeatAction:" + tweenable.repeatAction, null )
+
+          if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
+            tweenable.transition = -1
+            transform.rotation.copyFrom(end)
+            this.removeComponent(entity)
+
+            // send actions
+            tweenable.channel.sendActions(tweenable.onComplete)
+          }else{
+            if(tweenable.repeatAction == 'relative'){
+              //mutate end and start
+              let rotEuler:Vector3 = transform.rotation.clone().eulerAngles;
+              tweenable.origin=rotEuler
+              //go back to 0 and if over shot etc. adjusts so its smooth
+              tweenable.transition = tweenable.transition - 1;
+            }else if(tweenable.repeatAction == 'reverse'){
+              //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
+              tweenable.transition = tweenable.transition - 1;
+              transform.rotation.copyFrom(end)
+
+              //log("rotate repeat before" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
+              //  + " vs " + tweenable.x + " " + tweenable.y + " " + tweenable.z)
+
+              //mutate end and start
+              tweenable.origin=end.clone().eulerAngles
+              
+              //euler rotation is relative so just negate it
+              tweenable.x=tweenable.x*-1
+              tweenable.y=tweenable.y*-1
+              tweenable.z=tweenable.z*-1
+
+              //log("rotate repeat after" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
+              //  + " vs " + tweenable.x + " " + tweenable.y + " " + tweenable.z)
+            }else{//repeat abs
+              //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
+              tweenable.transition = tweenable.transition - 1;
+            }
+          }
+        }
+        break
+      }
+      case 'rotate-q': {
+        if(tweenable.trackingType && tweenable.trackingType != 'current'){
+          if(trackingTweenable && tweenable.trackingType == 'meet'){
+            let lookAtTarget = new Vector3(trackingTweenable.x,trackingTweenable.y,trackingTweenable.z);//flyweight to avoid new object each time?
+            let endRotation:Quaternion = computeFaceAngle(lookAtTarget,transform,tweenable.lockMode,tweenable.lockX,tweenable.lockY,tweenable.lockZ);
+            tweenable.x = endRotation.x
+            tweenable.y = endRotation.y
+            tweenable.z = endRotation.z
+            tweenable.w = endRotation.w
+          }else if(tweenable.trackingType == 'follow'){
+            let lookAtTarget = new Vector3().copyFrom(trackingTransform.position)
+              
+            if(trackingTransform){
+              lookAtTarget = new Vector3().copyFrom(trackingTransform.position)//is copy required? flyweight for vector storage?
+            }else if(tweenable.targetOfInterestType == 'player'){
+              if(tweenable.targetOfInterest == tweenable.channel.id){
+                //TODO add if tracking player update camera position  
+                lookAtTarget = new Vector3().copyFrom(player.position)//is copy required? flyweight for vector storage?
+              }else{
+                //not me must hope for a sync
+              }
+            }
+            
+            let endRotation:Quaternion = computeFaceAngle(lookAtTarget,transform,tweenable.lockMode,tweenable.lockX,tweenable.lockY,tweenable.lockZ);
+            tweenable.x = endRotation.x
+            tweenable.y = endRotation.y
+            tweenable.z = endRotation.z
+            tweenable.w = endRotation.w
+
+            //keep syncing origin for smooth follow???
+            //TODO why does move require setting this but not rotateq?
+            //its cuz computeFaceAngle takes object itself instead of a copied var of position/rotate
+            //if(tweenable.repeatAction == 'relative'){
+              //tweenable.originQ = transform.rotation
+            //}
+          }
+        }
+        //log("rotate-q " + tweenable.transition +  " "  + tweenable.destPosition +  " " + tweenable.x +  " " + tweenable.y +  " " + tweenable.z +  " " + tweenable.w)
+        const start = tweenable.originQ //
+        const end = new Quaternion(tweenable.x, tweenable.y, tweenable.z,tweenable.w)
+        
+        if (tweenable.transition >= 0 && tweenable.transition < 1) {
+          tweenable.transition += dt * speed
+
+          let easingIndex = 0;
+          if(tweenable.repeatAction == 'relative' && tweenable.trackingType && tweenable.trackingType == 'follow'){
+            //when doing follow should not be on a curve
+            easingIndex = dt * speed
+          }else{
+            easingIndex = easingConverter(
+              tweenable.transition,
+              tweenable.curve
+            )
+          }
+          
+          transform.rotation.copyFrom(
+            Quaternion.Slerp(start, end, easingIndex)
+          )
+  
+        } else if (tweenable.transition >= 1) {
+          if(this.logger.isDebugEnabled()) this.logger.debug( METHOD_NAME,tweenable.type + " " +  entity['name'] + " ended; repeatAction:" + tweenable.repeatAction, null )
+
+          if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
+            tweenable.transition = -1
+            transform.rotation.copyFrom(end)
+            this.removeComponent(entity)
+
+            // send actions
+            tweenable.channel.sendActions(tweenable.onComplete)
+          }else{
+            if(tweenable.targetOfInterestType == 'player'){
+              if(tweenable.targetOfInterest == tweenable.channel.id){
+                //TODO add if tracking player update camera position  
+                //send sync action for new position
+              }else{
+                //not me must hope for a sync
+              }
+            }
+            if(tweenable.repeatAction == 'relative'){
+              //log("move relative loop starting again")
+              //mutate end and start
+              tweenable.originQ=transform.rotation.clone() //clone not needed? but does it hurt?
+              //go back to 0 and if over shot etc. adjusts so its smooth
+              tweenable.transition = tweenable.transition - 1;
+            }else{//repeat abs
+              //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
+              tweenable.transition = tweenable.transition - 1;
+            }
+          }
+        }
+        break
+      }
+    }
+  }//END ROTATE SYSTEM
 }
 export class TweenSystemScale extends TweenSystem<TweenableScale>{
   constructor(){
@@ -905,6 +822,82 @@ export class TweenSystemScale extends TweenSystem<TweenableScale>{
   getClassName():string{ //if minified not sure can trust this?!?!
     return "TweenSystemScale";//this.constructor.name
   }
+  //START SCALE SYSTEM
+  updateApply(dt: number, entity: IEntity, tweenable: any, transform: Transform, speed: number, trackingEntity: any, trackingTransform: Transform, trackingTweenable: any) {
+    const METHOD_NAME = "updateApply"
+
+    if(tweenable.trackingType && tweenable.trackingType != 'current'){
+      if(tweenable.trackingType == 'meet' && trackingTweenable){
+        tweenable.x = trackingTweenable.x
+        tweenable.y = trackingTweenable.y
+        tweenable.z = trackingTweenable.z
+      }else if(tweenable.trackingType == 'follow' && trackingTransform){
+        tweenable.x = trackingTransform.scale.x
+        tweenable.y = trackingTransform.scale.y
+        tweenable.z = trackingTransform.scale.z
+      }
+    }
+    const start = tweenable.origin
+    const offset = offsetFactory(tweenable, start)
+    const end = new Vector3(offset('x'), offset('y'), offset('z'))
+
+    if (tweenable.transition >= 0 && tweenable.transition < 1) {
+      tweenable.transition += dt * speed
+      let easingIndex = easingConverter(
+        tweenable.transition,
+        tweenable.curve
+      )
+      transform.scale.copyFrom(Vector3.Lerp(start, end, easingIndex))
+    } else if (tweenable.transition >= 1) {
+      if(this.logger.isDebugEnabled()) this.logger.debug( METHOD_NAME,tweenable.type + " " +  entity['name'] + " ended; repeatAction:" + tweenable.repeatAction, null )
+
+      if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
+        tweenable.transition = -1
+        transform.scale.copyFrom(end)
+        this.removeComponent(entity)
+
+        // send actions
+        tweenable.channel.sendActions(tweenable.onComplete)
+      }else{
+        if(tweenable.repeatAction == 'relative'){
+          let origScale:Vector3 = tweenable.origin;
+
+          //mutate end and start
+          //RISK never stopping getting too big
+          tweenable.origin=transform.scale.clone()
+
+          //should scale relative to the diff between last orig and now
+          tweenable.x+=tweenable.x-origScale.x
+          tweenable.y+=tweenable.y-origScale.y
+          tweenable.z+=tweenable.z-origScale.z
+
+          //go back to 0 and if over shot etc. adjusts so its smooth
+          tweenable.transition = tweenable.transition - 1;
+        }else if(tweenable.repeatAction == 'reverse'){
+          //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
+          tweenable.transition = tweenable.transition - 1;
+          transform.scale.copyFrom(end)
+
+          //log("scale reverse before" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
+          //  + " vs " + tweenable.x + " " + tweenable.y + " " + tweenable.z)
+
+          //mutate end and start
+          let origScale:Vector3 = tweenable.origin;
+          tweenable.origin=end.clone()
+          
+          tweenable.x=origScale.x
+          tweenable.y=origScale.y
+          tweenable.z=origScale.z
+
+          //log("scale reverse after" + tweenable.origin.x + " " + tweenable.origin.y + " " + tweenable.origin.z 
+          //  + " vs " + tweenable.x + " " + tweenable.y + " " + tweenable.z)
+        }else{//repeat abs
+          //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
+          tweenable.transition = tweenable.transition - 1;
+        }
+      }
+    }
+  }//END SCALE SYSTEM
 }
 
 

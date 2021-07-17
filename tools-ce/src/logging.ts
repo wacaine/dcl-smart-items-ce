@@ -1,3 +1,4 @@
+import { TweenableVO } from "./tween";
 
 export type LoggerLevel =  'ERROR' | 'WARN' | 'INFO'  | 'DEBUG' | 'TRACE'
 
@@ -22,6 +23,12 @@ export type LoggerContextData = {
     displayName?:string
 }
 
+
+export function jsonStringifyTweenable(tween:TweenableVO){
+    let str = "Tween[" + JSON.stringify(tween)
+    str+="]"
+    return str
+}
 export function jsonStringifyActions(action:Action<any>,includeValues?:boolean,includeValueArrays?:boolean){
     let str = "Action[actionId:" + action.sender + ";actionId:" + action.actionId + ";" + "entityName:" + action.entityName
     if(includeValues){
@@ -51,7 +58,7 @@ export class Logger {
         this.name = name
         this.contextData = contextData
     }
-
+    
     //2021-03-16 13:58:10.817  INFO [traceid= spanid= parentspanid=] 58189 --- [           main] c.c.c.ConfigServicePropertySourceLocator : Fetching config from server at : http://localhost:8888
     trace(method:string,msg:string,args:any[]){
         this.logIt("TRACE",  method, msg, args);
@@ -61,6 +68,9 @@ export class Logger {
     }
     debug(method:string,msg:string,args:any[]){
         this.logIt("DEBUG",  method, msg, args);
+    }
+    warn(method:string,msg:string,args:any[]){
+        this.logIt("WARN",  method, msg, args);
     }
     logIt(level:LoggerLevel,method:string,msg:string, args:any[]){
         let argsStr = null;
@@ -77,14 +87,15 @@ export class Logger {
         log(level + contextStr + " " + this.name + " " + method + ": " + msg + " " + argsStr)
     }
 
+    isWarnEnabled(){
+        return LOGGING_LEVEL_NUMS['WARN'] <= LOGGING_LEVEL_NUMS[LOGGING_CONF.level]
+    }
     isDebugEnabled(){
         return LOGGING_LEVEL_NUMS['DEBUG'] <= LOGGING_LEVEL_NUMS[LOGGING_CONF.level]
     }
-
     isInfoEnabled(){
         return LOGGING_LEVEL_NUMS['INFO'] <= LOGGING_LEVEL_NUMS[LOGGING_CONF.level]
     }
-
     isTraceEnabled(){
         return LOGGING_LEVEL_NUMS['TRACE'] <= LOGGING_LEVEL_NUMS[LOGGING_CONF.level]
     }
