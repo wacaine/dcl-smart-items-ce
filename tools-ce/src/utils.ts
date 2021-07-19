@@ -3,6 +3,99 @@ export const getEntityByName = (name: string) =>
     .map((key) => engine.entities[key])
     .filter((entity) => (entity as Entity).name === name)[0]
 
+export class CacheEntry<T>{
+    value: T
+    createTimestamp: number
+    lastFetchTimestamp: number
+
+    constructor(args: {
+        value: T
+        createTimestamp: number
+        lastFetchTimestamp: number
+      }) {
+        this.value = args.value
+        this.createTimestamp = args.createTimestamp
+        this.lastFetchTimestamp = args.lastFetchTimestamp
+      }
+}
+export class CacheStats{
+    hits: number = 0
+    misses: number = 0
+    size: number = 0
+}
+
+export interface ILazyMap<K,T>{
+    get(name:K):T
+    put(name:K,obj:T):void
+    delete(name:string):T
+}
+
+export interface ITransformer<K,T>{
+    transform(name: K):T
+}
+
+export class Cache<K,T> implements ILazyMap<string,T>{
+    records: Record<string, CacheEntry<T>> = {}
+    stats: CacheStats = new CacheStats();
+    transformer: ITransformer<string,T>;
+
+    constructor(args: {
+        transformer?: ITransformer<string,T>
+      }) {
+        this.transformer = args.transformer
+      }
+
+    getRecord(name:string):CacheEntry<T>{
+        return this.records[name];
+    }
+    get(name:string):T{
+        //log("get  " + name )
+        const obj = this.records[name];
+        //log("get found " + obj )
+        let val:T;
+        if(obj){
+            this.stats.hits++;
+            obj.lastFetchTimestamp = +Date.now()
+            val = obj.value
+        }else{
+            this.stats.misses++;
+            val = this.transformer.transform(name)
+            this.put(name,val)
+        }
+        return val;
+    }
+    put(name:string,obj:T){
+        const currentTime: number = +Date.now()
+        this.records[name] = new CacheEntry({value:obj,createTimestamp:currentTime,lastFetchTimestamp:currentTime});
+        this.stats.size = +this.records.length
+        return obj;
+    }
+
+    delete(name:string){
+        const obj = this.records[name];
+        log("delete " + name + " found " + obj)
+        let val:T;
+        if(obj){
+            val = obj.value
+            delete this.records[name]
+        }
+        return val;
+    }
+}
+
+export class EntityNameTransformer implements ITransformer<string,IEntity>{
+    transform(name: string):IEntity {
+        
+        const entity = getEntityByName(name)
+        log("transform " + name + " found " + entity)
+
+        return entity;
+    }
+}
+
+export const ENTITY_CACHE_BY_NAME_MAP: Cache<string,IEntity> = new Cache<string,IEntity>({transformer:new EntityNameTransformer()})
+
+
 export function computeFaceAngle(lookAtTarget:Vector3,transform:Transform,lockMode:string,lockX:boolean,lockY:boolean,lockZ:boolean) {
     let lockW = false
     /*
