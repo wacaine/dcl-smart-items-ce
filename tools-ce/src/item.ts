@@ -17,7 +17,7 @@ import { Animated, AnimType } from './animation'
 import { getEntityWorldPosition, getEntityWorldRotation } from './decentralandecsutils/helpers/helperfunctions'
 //import { movePlayerTo } from '@decentraland/RestrictedActions'
 
-const VERSION = "1.1.2-alpha"
+const VERSION = "1.1.2-beta"
 const ITEM_FULL_NAME = "Toolbox-CE v." + VERSION
 
 export type Props = {
@@ -396,6 +396,7 @@ if(props.clickable){
       channel.sendActions(tween.onComplete)
     } )
     
+    //TODO make followVectorPath. see commit a32591b for asset.json stuff
     channel.handleAction<Tween>('followItemPath', (action) => {
       const { target , ...tween } = action.values
 
