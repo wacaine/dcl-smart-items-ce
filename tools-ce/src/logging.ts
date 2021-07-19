@@ -1,8 +1,9 @@
 import { TweenableVO } from "./tween";
 
-export type LoggerLevel =  'ERROR' | 'WARN' | 'INFO'  | 'DEBUG' | 'TRACE'
+export type LoggerLevel =  'ERROR' | 'WARN' | 'INFO'  | 'DEBUG' | 'TRACE' | 'LOG'
 
 const LOGGING_LEVEL_NUMS = {};
+LOGGING_LEVEL_NUMS['LOG'] = 0 //made up level to ensure logged no matter what
 LOGGING_LEVEL_NUMS['ERROR'] = 1
 LOGGING_LEVEL_NUMS['WARN'] = 2
 LOGGING_LEVEL_NUMS['INFO'] = 3
@@ -63,8 +64,11 @@ export class Logger {
     trace(method:string,msg:string,args:any[]){
         this.logIt("TRACE",  method, msg, args);
     }
-    log(method:string,msg:string,args:any[]){
+    info(method:string,msg:string,args:any[]){
         this.logIt("INFO",  method, msg, args);
+    }
+    log(method:string,msg:string,args:any[]){
+        this.logIt("LOG",  method, msg, args);
     }
     debug(method:string,msg:string,args:any[]){
         this.logIt("DEBUG",  method, msg, args);

@@ -15,7 +15,7 @@ import { Logger,jsonStringifyActions,jsonStringifyActionsFull,jsonStringifyTween
 import { setTimeout, DelaySystem } from './delay'
 import { Animated, AnimType } from './animation'
 import { getEntityWorldPosition, getEntityWorldRotation } from './decentralandecsutils/helpers/helperfunctions'
-import { movePlayerTo } from '@decentraland/RestrictedActions'
+//import { movePlayerTo } from '@decentraland/RestrictedActions'
 
 const VERSION = "1.1.2-alpha"
 const ITEM_FULL_NAME = "Toolbox-CE v." + VERSION
@@ -153,6 +153,7 @@ export default class Tools implements IScript<Props> {
   tweenSystemRotate = new TweenSystemRotate()
   tweenSystemScale = new TweenSystemScale()
   delaySystem = new DelaySystem()
+  logger = new Logger("Toolbox",{})
 
   getContainer = () => {
     if (!this.container) {
@@ -167,18 +168,22 @@ export default class Tools implements IScript<Props> {
     return this.container
   }
   init() {
-    log(ITEM_FULL_NAME  + " initializing... " )
+    const METHOD_NAME = "init"
+    this.logger.log(METHOD_NAME,ITEM_FULL_NAME  + " initializing... ",null )
     //tweenSystem = new TweenSystem()
     //engine.addSystem(this.tweenSystem)
     engine.addSystem(this.tweenSystemMove)
     engine.addSystem(this.tweenSystemRotate)
     engine.addSystem(this.tweenSystemScale)
     engine.addSystem(this.delaySystem)
-    log(ITEM_FULL_NAME + " initializing DONE " )
+
+    //fetch world clock?
+
+    this.logger.log(METHOD_NAME,ITEM_FULL_NAME + " initializing DONE ",null )
   }
 
   getEntities() {
-    //must union hidden in
+    //must union in removed entities
     return this.tweenSystem.syncableGroup.entities as Entity[]
   }
   

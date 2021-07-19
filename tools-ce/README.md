@@ -1,3 +1,20 @@
+fix follow item path mirror
+
+fix sync 12 vs 11
+fix sync reply before response
+WIP clean up code
+DONE refactor
+WIP fix add/remove persist parent object
+DONE removeAction.clone and do channel.createAction
+adjustForSceneRotation - need to test with odd shapped parcels
+WIP cache target of integrest so does not lookup each time
+need to recurse in for follow/face player and hardcode the values into onCompletes
+
+
+motion control
+	change speed,repeat? would require look ahead
+apply force
+
 # Smart Item: Toolbox CE
 
 
@@ -144,6 +161,7 @@ The target item will move towards the target item at a configurable speed for ho
 
 
 ### Move to Player
+
 
 The target item will move towards the player at a configurable speed for how fast it move and stops when arrived at the player.  The position the item moves is the position the player was at time of triggering, not where the player moves to afterwards.
 

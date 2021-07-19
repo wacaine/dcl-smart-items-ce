@@ -1,4 +1,4 @@
-import { getEntityByName,computeFaceAngle,computeMoveVector } from './utils'
+import { ENTITY_CACHE_BY_NAME_MAP,computeFaceAngle,computeMoveVector } from './utils'
 import { Logger,jsonStringifyActions,jsonStringifyActionsFull } from './logging'
 
 export type TweenType = 'move' | 'rotate' | 'rotate-q' | 'scale' | 'follow-path'
@@ -55,6 +55,54 @@ export type Tween = {
 export class PathSpeed {
   speed: number = 0.5
 }
+
+
+@Component('org.decentraland.AttachDetachMetaData')
+export class AttachDetachMetaData{
+  originalParent: IEntity
+  previousParent: IEntity
+}
+
+export class TweeningMetaDataVO {
+  //one per transition
+  target: string
+  targetOfInterest: string
+  targetEntity: IEntity
+  targetOfInterestEntity: IEntity
+}
+@Component('org.decentraland.TweenableMoveMetaData')
+export class TweenableMoveMetaData extends TweeningMetaDataVO{
+
+}
+@Component('org.decentraland.TweenableRotateMetaData')
+export class TweenableRotateMetaData extends TweeningMetaDataVO{
+
+}
+@Component('org.decentraland.TweenableScaleMetaData')
+export class TweenableScaleMetaData extends TweeningMetaDataVO{
+
+}
+
+
+//TODO return correct type base on tweentype
+function factoryCreateTweeningMetaData<T extends TweenableVO,R extends TweeningMetaDataVO>(tweenable:Tweenable,component:ComponentConstructor<T>,objectToPopulate:R){
+  //TODO consider moving trackingX into a metho method lookup?
+  let trackingEntity = null
+  //embed in object?
+  //let trackingTransform:Transform = null;
+  //let trackingTweenable = null;
+  
+  if(tweenable.trackingType && tweenable.targetOfInterest){
+    //TODO cache this so not looked up each time? into a component??
+    //make a record lookup cache? cleaned out when done?
+    trackingEntity = ENTITY_CACHE_BY_NAME_MAP.get(tweenable.targetOfInterest);
+  }
+
+  objectToPopulate.targetOfInterestEntity = trackingEntity;
+  objectToPopulate.targetOfInterest = tweenable.targetOfInterest
+  //objectToPopulate.targetOfInterestTweenable = trackingTweenable
+}
+
 
 @Component("pathData")
 export class PathData {
@@ -270,15 +318,13 @@ const offsetFactory = (tweenable: Tweenable, relative: Vector3) => (
 //leave player out here as static.  If I init it inside the method for some resaon the player position reports 0s first usage????
 const player = Camera.instance
 
-const logger = new Logger("tween.js",{})
-
 export class TweenSystem<T extends TweenableVO> {
   syncableGroup = engine.getComponentGroup(Syncable)
   component:ComponentConstructor<T> = null
   //let xxx:typeof Tweenable = Tweenable
   //TODO pass to constructor the group type TweenableRotate vs TweenableMove vs TweenableScale
   tweenableGroup:ComponentGroup = null;//engine.getComponentGroup(Tweenable)
-  logger = new Logger("tween.js",{})
+  logger:Logger = null
 
   constructor(component:ComponentConstructor<T>){
     this.logger = new Logger(this.getClassName(),{})
@@ -327,9 +373,8 @@ export class TweenSystem<T extends TweenableVO> {
       }
 
       if(tweenable.trackingType && tweenable.targetOfInterest){
-        //TODO cache this so not looked up each time? into a component??
-        //make a record lookup cache? cleaned out when done?
-        trackingEntity = getEntityByName(tweenable.targetOfInterest);
+        //using cache so not slow looked up each time? into a component??
+        trackingEntity = ENTITY_CACHE_BY_NAME_MAP.get(tweenable.targetOfInterest);
 
         if(trackingEntity){
           trackingTransform = trackingEntity.getComponent(Transform)
@@ -345,7 +390,14 @@ export class TweenSystem<T extends TweenableVO> {
       const speed = tweenable.speed / 10
       
       
-      this.updateApply(dt,entity,tweenable,transform,speed,trackingEntity,trackingTransform,trackingTweenable)      
+      this.updateApply(dt,entity,tweenable,transform,speed,trackingEntity,trackingTransform,trackingTweenable)
+      
+      //if done evict from cache
+      //TODO dont evict if in infinite loop
+      //TODO must handle when a tween is replaced by a new tween cleanup stuff
+      if(trackingEntity && tweenable.transition >=1){
+        ENTITY_CACHE_BY_NAME_MAP.delete(tweenable.targetOfInterest)
+      }
     }
   }
   // this method exists so that each system can implement their own logic
@@ -368,6 +420,7 @@ export class TweenSystemMove extends TweenSystem<TweenableMove>{
     super.removeComponent(entity)
     if(entity.hasComponent(PathData)) entity.removeComponent(PathData)
     if(entity.hasComponent(RotateData)) entity.removeComponent(RotateData)
+    if(entity.hasComponent(TweenableMoveMetaData)) entity.removeComponent(TweenableMoveMetaData)
   }
   //START MOVE SYSTEM
   updateApply(dt: number, entity: IEntity, tweenable: any, transform: Transform, speed: number, trackingEntity: any, trackingTransform: Transform, trackingTweenable: any) {
