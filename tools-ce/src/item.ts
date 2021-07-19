@@ -286,7 +286,7 @@ if(props.clickable){
         engine.addEntity(entity);
         delete this.removedEntities[target];
       }else if(!entity){
-        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "could not find " + " " + target + " for action " + sceneAddRemove,null)
+        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " for action " + sceneAddRemove,null)
       }
       
       channel.sendActions(tween.onComplete)
@@ -355,7 +355,7 @@ if(props.clickable){
         }
         
       }else{
-        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "could not find " + " " + target + " " + entityToAttach + " and/or " + tween.targetOfInterest  + " " + entityTarget,null)
+        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entityToAttach + " and/or " + tween.targetOfInterest  + " " + entityTarget,null)
       }
 
       channel.sendActions(tween.onComplete)
@@ -391,7 +391,7 @@ if(props.clickable){
         entityToDetach.setParent(tempLastHost)
         
       }else{
-        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "could not find " + " " + target + " " + entityToDetach + " and/or " + tween.targetOfInterest  + " " + entityTarget,null)
+        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entityToDetach + " and/or " + tween.targetOfInterest  + " " + entityTarget,null)
       }
       channel.sendActions(tween.onComplete)
     } )
@@ -442,7 +442,7 @@ if(props.clickable){
             cpoints.push(new Vector3().copyFrom(pathEnt.getComponent(Transform).position));
             cpointsSignatureHack.addInPlace(cpoints[cpoints.length-1])
           }else{
-            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "could not find " + " " + itmName + " for action " + itmName + " for index " + x,null)
+            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + itmName + " for action " + itmName + " for index " + x,null)
           }
         }
 
@@ -502,7 +502,7 @@ if(props.clickable){
         entity.addComponentOrReplace(new Syncable())
         
       }else{
-        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "could not find " + " " + target + " " + entity,null)
+        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity,null)
       }
     })
     channel.handleAction<Tween>('tweenControlAction', (action) => {
@@ -525,7 +525,7 @@ if(props.clickable){
           this.processControlAction('scale',entity,tween.controlMode,TweenableScale)
         }
       }else{
-        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "could not find " + " " + target + " " + entity,null)
+        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity,null)
       }
 
       channel.sendActions(action.values.onComplete)
@@ -590,7 +590,7 @@ if(props.clickable){
         //send move so everyone else gets it
         channel.sendActions( [clonedAction] )
       }else if(!entityToMove){
-        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "could not find " + " " + target + " " + entityToMove,null)
+        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entityToMove,null)
       }else{
         if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "moveToPlayer called by " + action.sender + ".  Is not me " + channel.id + " so skipping",null)
       }
@@ -630,7 +630,7 @@ if(props.clickable){
 
         channel.sendActions( [clonedAction] )
       }else{
-        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "could not find " + " " + target + " " + entityToMove + " and/or " + tween.targetOfInterest  + " " + entityDest,null)
+        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entityToMove + " and/or " + tween.targetOfInterest  + " " + entityDest,null)
       }
     })
 
@@ -668,7 +668,7 @@ if(props.clickable){
 
         channel.sendActions([clonedAction])
       }else{
-        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "could not find " + " " + target + " " + entity + " and/or " + tween.targetOfInterest  + " " + entityLookAt,null)
+        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity + " and/or " + tween.targetOfInterest  + " " + entityLookAt,null)
       }
     })
     
@@ -730,7 +730,7 @@ if(props.clickable){
           //send rotate move so everyone else gets it
           channel.sendActions([clonedAction])
         }else{
-          if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "could not find " + " " + target + " " + entity,null)
+          if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity,null)
         }
       }else{
         log("facePlayer called for " + target + " from " + action.sender + ". was not me " + channel.id + " so skipping" )
@@ -782,7 +782,7 @@ if(props.clickable){
         entity.addComponentOrReplace(tweenable)
         entity.addComponentOrReplace(new Syncable())
       }else{
-        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "could not find " + " " + target + " " + entity,null)
+        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity,null)
       }
     })
 
@@ -830,7 +830,7 @@ if(props.clickable){
         entity.addComponentOrReplace(tweenable)
         entity.addComponentOrReplace(new Syncable())
       }else{
-        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "could not find " + " " + target + " " + entity,null)
+        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity,null)
       }
     })
 
@@ -877,7 +877,7 @@ if(props.clickable){
         entity.addComponentOrReplace(tweenable)
         entity.addComponentOrReplace(new Syncable())
       }else{
-        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "could not find " + " " + target + " " + entity,null)
+        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity,null)
       }
     })
 
@@ -922,7 +922,7 @@ if(props.clickable){
         entity.addComponentOrReplace(tweenable)
         entity.addComponentOrReplace(new Syncable())
       }else{
-        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "could not find " + " " + target + " " + entity,null)
+        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity,null)
       }
     })
 
@@ -1015,7 +1015,7 @@ if(props.clickable){
             break
         }
       }else{
-        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "could not find " + " " + target + " " + entity,null)
+        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity,null)
       }
     })
 
@@ -1084,8 +1084,6 @@ if(props.clickable){
           for( const p in tweenArray){
             const tween = tweenArray[p]
             if (tween) {
-              //log(METHOD_NAME + DEBUG_MSG_ID + "; got sync for " + entityName + " " + tween.type)
-              //CREATE RIGHT TYPE
               let tweenable = null;
               switch(tween.type){
                 case 'move': 
@@ -1125,13 +1123,7 @@ if(props.clickable){
                   break;
                 }
               }
-              /*
-              tweenable = new Tweenable({
-                  ...tween,
-                  channel,
-                })
-                */
-            //TODO sync PathData + RotationData
+              //TODO sync PathData + RotationData
               entity.addComponentOrReplace(tweenable) //TODO either need to move the followCurve into tween OR sync PathData + RotateData objects too
               addSyncable = true;
             }
@@ -1167,6 +1159,8 @@ if(props.clickable){
           if(addSyncable){
             entity.addComponentOrReplace(new Syncable()) //make new player to be able to respond
           }
+        }else{
+          if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + entityName + "; " + entity,null)
         }
       }
     })
@@ -1226,18 +1220,16 @@ if(props.clickable){
             const pathData = entity.getComponent(PathData)
             tween.pathOriginIndex = pathData.origin
           }
-          //TODO need rotate data!
+          //FIXME need rotate data!? might be in the tween now?
           syncEntity.tweenMove = tween //sets move tween data
           
         }
         if (entity.hasComponent(TweenableRotate)) {
           const { channel: _, ...tween } = entity.getComponent(TweenableRotate)
-          //log("sync check found for TweenableRotate" + " " + tween.type + " "  + entity.name  );//+ " " + tween.)
           syncEntity.tweenRotate = tween //sets rotate tween data
         }
         if (entity.hasComponent(TweenableScale)) {
           const { channel: _, ...tween } = entity.getComponent(TweenableScale)
-          //log("sync check found for TweenableScale" + " " + tween.type + " "  + entity.name  );//+ " " + tween.)
           syncEntity.tweenScale = tween //sets scale tween data
         }
         if (entity.hasComponent(Animated)) {
