@@ -60,7 +60,6 @@ export class PathSpeed {
 export class PathData {
   start: number = 0
   origin: number = 0
-  //originVector: Vector3;//because sometimes origin is not 0??? TODO can we remove it from member variable? only used in constructor
   target: number = 1
   points: Vector3[]
   curvePoints: number = 25
@@ -365,6 +364,11 @@ export class TweenSystemMove extends TweenSystem<TweenableMove>{
   getClassName():string{ //if minified not sure can trust this?!?!
     return "TweenSystemMove";//this.constructor.name
   }
+  removeComponent(entity:IEntity){
+    super.removeComponent(entity)
+    if(entity.hasComponent(PathData)) entity.removeComponent(PathData)
+    if(entity.hasComponent(RotateData)) entity.removeComponent(RotateData)
+  }
   //START MOVE SYSTEM
   updateApply(dt: number, entity: IEntity, tweenable: any, transform: Transform, speed: number, trackingEntity: any, trackingTransform: Transform, trackingTweenable: any) {
     const METHOD_NAME = "updateApply"
@@ -495,7 +499,6 @@ export class TweenSystemMove extends TweenSystem<TweenableMove>{
         }
         break;
       }
-      //TODO move to MOVE
       case 'follow-path': {
           
         //const start = tweenable.originQ
@@ -616,9 +619,7 @@ export class TweenSystemMove extends TweenSystem<TweenableMove>{
             tweenable.transition = -1
             //transform.rotation.copyFrom(end)
             this.removeComponent(entity)
-            if(entity.hasComponent(PathData)) entity.removeComponent(PathData)
-            if(entity.hasComponent(RotateData)) entity.removeComponent(RotateData)
-
+            
             // send actions
             tweenable.channel.sendActions(tweenable.onComplete)
           }else{
@@ -638,6 +639,10 @@ export class TweenSystemRotate extends TweenSystem<TweenableRotate>{
   }
   getClassName():string{ //if minified not sure can trust this?!?!
     return "TweenSystemRotate";//this.constructor.name
+  }
+  removeComponent(entity:IEntity){
+    super.removeComponent(entity)
+    if(entity.hasComponent(TweenableRotateMetaData)) entity.removeComponent(TweenableRotateMetaData)
   }
   //START ROTATE SYSTEM
   updateApply(dt: number, entity: IEntity, tweenable: any, transform: Transform, speed: number, trackingEntity: any, trackingTransform: Transform, trackingTweenable: any) {
@@ -683,7 +688,7 @@ export class TweenSystemRotate extends TweenSystem<TweenableRotate>{
             tweenable.transition = -1
             transform.rotation.copyFrom(end)
             this.removeComponent(entity)
-
+            
             // send actions
             tweenable.channel.sendActions(tweenable.onComplete)
           }else{
@@ -821,6 +826,10 @@ export class TweenSystemScale extends TweenSystem<TweenableScale>{
   }
   getClassName():string{ //if minified not sure can trust this?!?!
     return "TweenSystemScale";//this.constructor.name
+  }
+  removeComponent(entity:IEntity){
+    super.removeComponent(entity)
+    if(entity.hasComponent(TweenableScaleMetaData)) entity.removeComponent(TweenableScaleMetaData)
   }
   //START SCALE SYSTEM
   updateApply(dt: number, entity: IEntity, tweenable: any, transform: Transform, speed: number, trackingEntity: any, trackingTransform: Transform, trackingTweenable: any) {
