@@ -13,7 +13,7 @@ import {
 import { getEntityByName,computeFaceAngle,computeMoveVector } from './utils'
 import { Logger,jsonStringifyActions,jsonStringifyActionsFull,jsonStringifyTweenable,LOGGING_CONF, LoggerLevel } from './logging'
 import { setTimeout, DelaySystem } from './delay'
-import { Animated, AnimType } from './animation'
+import { AnimatedData, Animated, AnimType } from './animation'
 import { getEntityWorldPosition, getEntityWorldRotation } from './decentralandecsutils/helpers/helperfunctions'
 //import { movePlayerTo } from '@decentraland/RestrictedActions'
 
@@ -41,6 +41,15 @@ type AnimationValues = {
   speed: number
   loop: boolean
   animation?: string
+  layer?: number
+}
+
+type SyncAnimated = { //TODO must change to list of anims
+  type: AnimType
+  name: string
+  speed: number
+  loop: boolean
+  layer: number
 }
 
 type SyncEntityTween = 
@@ -93,12 +102,7 @@ type SyncEntity = {
   tweenMove?: SyncEntityTween
   tweenRotate?: SyncEntityTween
   tweenScale?: SyncEntityTween
-  anim?: {
-    type: AnimType
-    name: string
-    speed: number
-    loop: boolean
-  }
+  animData?: Record<string,SyncAnimated>;
 }
 
 function clone(x)
@@ -927,7 +931,7 @@ if(props.clickable){
     })
 
     channel.handleAction<AnimationValues>('animate', (action) => {
-      const { target, animation, animAction, speed, loop } = action.values
+      const { target, animation, animAction, speed, loop, layer } = action.values
 
       const METHOD_NAME = "channel.handle.animate"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
@@ -945,13 +949,21 @@ if(props.clickable){
           animator = new Animator()
           entity.addComponent(animator)
         }
+        let animData = null;
+        if (entity.hasComponent(AnimatedData)) {
+          animData = entity.getComponent(AnimatedData)
+          log(METHOD_NAME + " " + animation + " found animData " + animData + " " + animData.clips.length)
+        }else{
+          log(METHOD_NAME + " " + animation + " found animData " + null)
+        }
+        const existingAnim = animData != null ? animData.clips[action.values.animation ] : null;
 
+        log(METHOD_NAME + " " + animation + " existingAnim " + existingAnim)
+            
         let currentAnim: string
         switch (animAction) {
           case 'play':
-            if (entity.hasComponent(Animated)) {
-              let existingAnim = entity.getComponent(Animated)
-
+            if(existingAnim){
               if (
                 existingAnim.sender !== action.sender &&
                 existingAnim.type == 'play' &&
@@ -963,55 +975,69 @@ if(props.clickable){
                 break
               }
               if (existingAnim.type == 'play') {
+                // NEED PARAM FOR STOP ALL OTHERS OR NOT
+                //might need a Play from start vs play
                 // stop any other playing animations
-
                 animator.getClip(existingAnim.name).stop()
+                //animator.getClip(existingAnim.name).pause()
               }
             }
-
+            
             let animClip = animator.getClip(animation)
             animClip.looping = loop
             animClip.speed = speed
             animClip.playing = true
+            if(layer !== undefined && layer !== null) animClip.layer = layer
+
             const animated = new Animated({
               type: 'play',
               name: animation,
               speed: speed,
               loop: loop,
               channel,
+              layer: layer,
               sender,
               timestamp: currentTime,
             })
 
-            entity.addComponentOrReplace(animated)
+            //entity.addComponentOrReplace(animated)
+            if(animData == null){ 
+              animData = new AnimatedData({});
+              log(METHOD_NAME + " " + animation + " adding animData " + animData + " " + animData.clips.length)
+              entity.addComponentOrReplace(animData)
+            }
+            //TODO log replacement
+            animData.clips[ animated.name ] = animated
+            log(METHOD_NAME + " " + animation + " layer " + animClip.layer + " " + animData.clips.length)
+
             entity.addComponentOrReplace(new Syncable())
             break
           case 'stop':
-            if (!entity.hasComponent(Animated)) {
+            if (existingAnim == null) {
               break
             }
-            currentAnim = entity.getComponent(Animated).name
+            currentAnim = existingAnim.name
 
             animator.getClip(currentAnim).stop()
-            entity.getComponent(Animated).type = 'stop'
+            existingAnim.type = 'stop'
             break
           case 'pause':
-            if (!entity.hasComponent(Animated)) {
+            if (existingAnim == null) {
               break
             }
-            currentAnim = entity.getComponent(Animated).name
+            currentAnim = existingAnim.name
 
             animator.getClip(currentAnim).pause()
-            entity.getComponent(Animated).type = 'pause'
+            existingAnim.type = 'pause'
             break
           case 'reset':
-            if (!entity.hasComponent(Animated)) {
+            if (existingAnim == null) {
               break
             }
-            currentAnim = entity.getComponent(Animated).name
+            currentAnim = existingAnim.name
 
             animator.getClip(currentAnim).reset()
-            entity.getComponent(Animated).type = 'reset'
+            existingAnim.type = 'reset'
             break
         }
       }else{
@@ -1069,7 +1095,7 @@ if(props.clickable){
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called. recieved " + (syncEntities ? syncEntities.length : null), null)
 
       for (const syncEntity of syncEntities) {
-        const { entityName, transform, tweenMove, tweenRotate, tweenScale, anim } = syncEntity
+        const { entityName, transform, tweenMove, tweenRotate, tweenScale, animData } = syncEntity
         const entity = getEntityByName(entityName)
         if (entity && entity !== undefined) {
           const original = entity.getComponent(Transform)
@@ -1129,31 +1155,44 @@ if(props.clickable){
             }
           }
           //does animation need syncable?
-          if (anim) {
-            const animated = new Animated({
-              ...anim,
-              channel,
-            })
-            entity.addComponentOrReplace(animated)
-            let animator = new Animator()
-            entity.addComponentOrReplace(animator)
+          if (animData) {
+            for( const p in animData){
+              const anim = animData[p]
+              const animated = new Animated({
+                ...anim,
+                channel,
+              })
+              entity.addComponentOrReplace(animated)
+              
+              let animator:Animator = null;
+              if (false || entity.hasComponent(Animator)) {
+                log("found existing animator component");
+                animator = entity.getComponent(Animator)
+              } else {
+                animator = new Animator()
+              }
 
-            let animClip = animator.getClip(anim.name)
-            animClip.looping = anim.loop
-            animClip.speed = anim.speed
-            switch (anim.type) {
-              case 'play':
-                animClip.play()
-                break
-              case 'stop':
-                animClip.stop()
-                break
-              case 'pause':
-                animClip.pause()
-                break
-              case 'reset':
-                animClip.reset()
-                break
+              entity.addComponentOrReplace(animator)
+
+              const animClip = animator.getClip(anim.name)
+              log( anim.name + " animator.clip ");
+              animClip.looping = anim.loop
+              animClip.speed = anim.speed
+              if(anim.layer !== undefined && anim.layer !== null) animClip.layer = anim.layer;
+              switch (anim.type) {
+                case 'play':
+                  animClip.play()
+                  break
+                case 'stop':
+                  animClip.stop()
+                  break
+                case 'pause':
+                  animClip.pause()
+                  break
+                case 'reset':
+                  animClip.reset()
+                  break
+              }
             }
           }
           if(addSyncable){
@@ -1232,9 +1271,11 @@ if(props.clickable){
           const { channel: _, ...tween } = entity.getComponent(TweenableScale)
           syncEntity.tweenScale = tween //sets scale tween data
         }
-        if (entity.hasComponent(Animated)) {
-          const { channel: _, ...anim } = entity.getComponent(Animated)
-          syncEntity.anim = anim
+        if (entity.hasComponent(AnimatedData)) {
+            if (entity.hasComponent(AnimatedData)) {
+            const { ...anim } = entity.getComponent(AnimatedData)
+            syncEntity.animData = anim.clips
+          }
         }
         return syncEntity
       })

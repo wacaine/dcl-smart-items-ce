@@ -1585,6 +1585,14 @@
           "label": "Loop",
           "type": "boolean",
           "default": true
+        },
+        {
+          "id": "layer",
+          "label": "Clip Layer",
+          "type": "integer",
+          "min": 0,
+          "max": 10,
+          "default": 0
         }
       ]
     },

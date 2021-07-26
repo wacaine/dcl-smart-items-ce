@@ -6,8 +6,25 @@ export type Animation = {
   speed: number
 }
 
+
+@Component('org.decentraland.AnimationData')
+export class AnimatedData {
+  clips: Record<string,Animated>;
+
+  constructor(args: {
+    clips?: Record<string,Animated>
+  }) {
+    if(args.clips != null){
+      this.clips = args.clips;
+    }else{
+      this.clips = {}
+    }
+  }
+}
+
 @Component('org.decentraland.Animation')
 export class Animated {
+  //TODO create as list of animations
   type: AnimType
   name: string
   speed: number
@@ -15,6 +32,7 @@ export class Animated {
   channel: IChannel
   sender: string = 'initial'
   timestamp: number
+  layer: number
 
   constructor(args: {
     type: AnimType
@@ -22,6 +40,7 @@ export class Animated {
     speed: number
     loop: boolean
     channel: IChannel
+    layer?: number
     sender?: string
     timestamp?: number
   }) {
@@ -29,6 +48,7 @@ export class Animated {
     this.name = args.name
     this.speed = args.speed
     this.channel = args.channel
+    this.layer = (args.layer !== null && args.layer !== undefined ? args.layer : 0)
     this.sender = args.sender
     this.loop = args.loop
     this.timestamp = args.timestamp
