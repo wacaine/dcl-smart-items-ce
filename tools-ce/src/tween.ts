@@ -603,23 +603,34 @@ export class TweenSystemMove extends TweenSystem<TweenableMove>{
                     // send actions
                     tweenable.channel.sendActions(tweenable.onComplete)
                   }else{
+                    let verifyTargetInBounced = false;
                     if(tweenable.repeatAction == 'relative'){
                       //will not be a thing since it has explicit points
                     }else if(tweenable.repeatAction == 'reverse'){
+                      log("reverse old values " + path.path.length + " " + path.start + " target" + path.target)
                       //TODO reverse curve points and reset counter
                       //reset counter
                       path.path = path.path.reverse()
-                      path.start = (path.path.length - 1) - path.start
+                      //path.start = (path.path.length - 1) - path.start
 
                       path.origin = path.start;
                       path.target = path.origin+1;
+
+                      verifyTargetInBounced = true
+                      log("new start " + path.start + " target" + path.target)
 
                     }else{//repeat abs
                       //reset counter
                       path.origin = path.start;
                       path.target = path.origin+1;
 
+                      verifyTargetInBounced = true
+                       
                       transform.position = path.path[path.origin].clone()
+                    }
+
+                    if (verifyTargetInBounced && path.target >= path.path.length-1) { //go back to first target
+                      path.target = 0
                     }
                   }
                 }
