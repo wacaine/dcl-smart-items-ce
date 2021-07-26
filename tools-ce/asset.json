@@ -198,8 +198,12 @@
               "label": "Linear"
             },
             {
-              "value": "instantaneous",
-              "label": "Instantaneous"
+              "value": "instantaneous-in",
+              "label": "Instantaneous-in"
+            },
+            {
+              "value": "instantaneous-out",
+              "label": "Instantaneous-out"
             },
             {
               "value": "easeinsine",
@@ -512,8 +516,12 @@
               "label": "Linear"
             },
             {
-              "value": "instantaneous",
-              "label": "Instantaneous"
+              "value": "instantaneous-in",
+              "label": "Instantaneous-in"
+            },
+            {
+              "value": "instantaneous-out",
+              "label": "Instantaneous-out"
             },
             {
               "value": "easeinsine",
@@ -702,8 +710,12 @@
               "label": "Linear"
             },
             {
-              "value": "instantaneous",
-              "label": "Instantaneous"
+              "value": "instantaneous-in",
+              "label": "Instantaneous-in"
+            },
+            {
+              "value": "instantaneous-out",
+              "label": "Instantaneous-out"
             },
             {
               "value": "easeinsine",
@@ -860,8 +872,12 @@
               "label": "Linear"
             },
             {
-              "value": "instantaneous",
-              "label": "Instantaneous"
+              "value": "instantaneous-in",
+              "label": "Instantaneous-in"
+            },
+            {
+              "value": "instantaneous-out",
+              "label": "Instantaneous-out"
             },
             {
               "value": "easeinsine",
@@ -1031,8 +1047,12 @@
               "label": "Linear"
             },
             {
-              "value": "instantaneous",
-              "label": "Instantaneous"
+              "value": "instantaneous-in",
+              "label": "Instantaneous-in"
+            },
+            {
+              "value": "instantaneous-out",
+              "label": "Instantaneous-out"
             },
             {
               "value": "easeinsine",
@@ -1207,8 +1227,12 @@
               "label": "Linear"
             },
             {
-              "value": "instantaneous",
-              "label": "Instantaneous"
+              "value": "instantaneous-in",
+              "label": "Instantaneous-in"
+            },
+            {
+              "value": "instantaneous-out",
+              "label": "Instantaneous-out"
             },
             {
               "value": "easeinsine",
@@ -1384,8 +1408,12 @@
               "label": "Linear"
             },
             {
-              "value": "instantaneous",
-              "label": "Instantaneous"
+              "value": "instantaneous-in",
+              "label": "Instantaneous-in"
+            },
+            {
+              "value": "instantaneous-out",
+              "label": "Instantaneous-out"
             },
             {
               "value": "easeinsine",

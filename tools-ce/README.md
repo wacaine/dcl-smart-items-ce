@@ -82,7 +82,7 @@ Visit the Discord channel
 
 ## New Features
 
-### New Curve Type: Instantly
+### New Curve Type: Instantaneous In/Out
 
 Instantly moves,rotates,scales and item.  There is no smooth transition from the previous position,rotation,scale to the new one.  It shifts immediatly.  For the sake of synchronicity any "onComplete" actions that follow will still have the wait XX time period to fire like all the other curve types
 
@@ -277,6 +277,17 @@ It is a function of ```(speed/10)*deltaTime=1```
 |	20	|	0.5	|
 
 ### Curve Type
+
+Curve (Easing) functions specify the rate of change of a parameter over time.
+
+Objects in real life don’t just start and stop instantly, and almost never move at a constant speed. When we open a drawer, we first move it quickly, and slow it down as it comes out. Drop something on the floor, and it will first accelerate downwards, and then bounce back up after hitting the floor.
+
+Here is an excellant summary of all the curve types. 
+
+<img src="../docs/tools-ce/screenshots/easing-type-diagrams.png" width="600">
+
+Credit for the diagram goes to Andrey Sitnik and Ivan Solovev [https://easings.net/](https://easings.net/)
+
 
 TODO
 

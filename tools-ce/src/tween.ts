@@ -962,11 +962,15 @@ export class TweenSystemScale extends TweenSystem<TweenableScale>{
   }//END SCALE SYSTEM
 }
 
-
+//"out" means towards beginning
+//"in" means towards end
+//https://easings.net/
 export enum CurveType {
   LINEAR = 'linear',
-  INSTANTANEOUS = 'instantaneous',
 
+  INSTANTANEOUS_OUT = 'instantaneous-out', //is upfront
+  INSTANTANEOUS_IN = 'instantaneous-in', //is at end
+  
   EASEINSINE = 'easeinsine',
   EASEOUTSINE = 'easeoutsine',
   EASEINOUTSINE = 'easeinoutsine',
@@ -997,8 +1001,15 @@ export function easingConverter(x: number, curveType: CurveType) {
     case CurveType.LINEAR:
       return x
       break
-    case CurveType.INSTANTANEOUS:
+    case CurveType.INSTANTANEOUS_IN:
       return 1
+      break
+    case CurveType.INSTANTANEOUS_OUT:
+      if(x >= 1){
+        return 1
+      }else{
+        return 0
+      }
       break
     case CurveType.EASEINSINE:
       return 1 - Math.cos((x * Math.PI) / 2)
