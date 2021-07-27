@@ -61,22 +61,22 @@ export class Logger {
     }
     
     //2021-03-16 13:58:10.817  INFO [traceid= spanid= parentspanid=] 58189 --- [           main] c.c.c.ConfigServicePropertySourceLocator : Fetching config from server at : http://localhost:8888
-    trace(method:string,msg:string,args:any[]){
+    trace(method:string,msg:string,args:any){
         this.logIt("TRACE",  method, msg, args);
     }
-    info(method:string,msg:string,args:any[]){
+    info(method:string,msg:string,args:any){
         this.logIt("INFO",  method, msg, args);
     }
-    log(method:string,msg:string,args:any[]){
+    log(method:string,msg:string,args:any){
         this.logIt("LOG",  method, msg, args);
     }
-    debug(method:string,msg:string,args:any[]){
+    debug(method:string,msg:string,args:any){
         this.logIt("DEBUG",  method, msg, args);
     }
-    warn(method:string,msg:string,args:any[]){
+    warn(method:string,msg:string,args:any){
         this.logIt("WARN",  method, msg, args);
     }
-    logIt(level:LoggerLevel,method:string,msg:string, args:any[]){
+    logIt(level:LoggerLevel,method:string,msg:string, args:any){
         let argsStr = null;
         if(args){
             argsStr=args
