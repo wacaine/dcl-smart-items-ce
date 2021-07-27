@@ -141,7 +141,7 @@ log("onSceneReadyObservable ")
 log("onSceneReadyObservable: "+onSceneReadyObservableExists)
 
 let tempLastHost = null;
-
+const _SCENE = getEntityByName("_scene");
 //taken from https://github.com/decentraland/decentraland-ecs-utils/blob/master/src/helpers/helperfunctions.ts
 
 
@@ -282,7 +282,7 @@ if(props.clickable){
       const { target,targets, sceneAddRemove, ...tween } = action.values
       const METHOD_NAME = "channel.handle.sceneAddRemove"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
-      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called " + jsonStringifyActions(action) + " " + target + "/" + targets + "/" + targets + " action " + sceneAddRemove,null)
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called " + jsonStringifyActions(action) + " " + target + "/" + targets + " action " + sceneAddRemove,null)
       if(!tween.multiplayer && action.sender != channel.id){
         if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
         return;
@@ -296,15 +296,27 @@ if(props.clickable){
         
         for(const p in entities){
           let entity = entities[p]
-          
-          if (entity && entity !== undefined && sceneAddRemove == 'remove') {
-            engine.removeEntity(entity);
-            this.removedEntities[(entity as Entity).name]=entity;
-          }else if(entity && sceneAddRemove=='add'){
-            engine.addEntity(entity);
-            delete this.removedEntities[(entity as Entity).name];
+          //TODO can i use .alive over isAddedToEngine()
+          //log(entityName + " " + entity.isAddedToEngine() + " vs " + entity.alive + " for " + sceneAddRemove);
+          if (entity && entity !== undefined) {
+            let entityName = (entity as Entity).name;
+            if(sceneAddRemove == 'remove'){
+              if(entity.isAddedToEngine()){
+                engine.removeEntity(entity);
+                this.removedEntities[entityName]=entity;
+              }else{
+                if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "Is already removed from engine " + " " + entityName + " for action " + sceneAddRemove,null)
+              }
+            }else if(sceneAddRemove=='add'){
+              if(!entity.isAddedToEngine()){
+                engine.addEntity(entity);
+                delete this.removedEntities[(entity as Entity).name];
+              }else{
+                if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "Is already added to engine " + " " + entityName + " for action " + sceneAddRemove,null)
+              }
+            }
           }else if(!entity){
-            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " for action " + sceneAddRemove,null)
+            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " for action " + sceneAddRemove + " entity " + entity + " " + p,null)
           }
         }
       }
@@ -315,7 +327,7 @@ if(props.clickable){
       const { target,targets, sceneAddRemove, ...tween } = action.values
       const METHOD_NAME = "channel.handle.sceneShowHide"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
-      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called " + jsonStringifyActions(action) + " " + target + "/" + targets + "/" + targets + " action " + sceneAddRemove,null)
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called " + jsonStringifyActions(action) + " " + target + "/" + targets + " action " + sceneAddRemove,null)
       if(!tween.multiplayer && action.sender != channel.id){
         if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
         return;
@@ -328,13 +340,25 @@ if(props.clickable){
         const entities:IEntity[] = getEntityBy(targetItm)
         for(const p in entities){
           let entity = entities[p]
-      
-          if (entity && entity !== undefined && sceneAddRemove == 'remove') {
-            engine.removeEntity(entity);
-            this.removedEntities[targetItm]=entity;
-          }else if(entity && sceneAddRemove=='add'){
-            engine.addEntity(entity);
-            delete this.removedEntities[targetItm];
+          
+          
+          if (entity && entity !== undefined ) {
+            //for(const p:ComponentConstructor<Shape> in [GLTFShape,NFTShape,OBJShape,PlaneShape,SphereShape,BoxShape,CircleShape,ConeShape,CylinderShape,Animator]){
+            const componentsToCheck = [GLTFShape,NFTShape,OBJShape,PlaneShape,SphereShape,BoxShape,CircleShape,ConeShape,CylinderShape,Animator]
+            for(const p in componentsToCheck){
+            //for(const p in [GLTFShape]){
+              log("entity checking if has " + componentsToCheck[p])
+              if(entity.hasComponent(componentsToCheck[p])){
+                log("entity has " + componentsToCheck[p])
+                if(sceneAddRemove == 'hide'){
+                  log("entity hiding " )
+                  entity.getComponent(componentsToCheck[p]).visible=false
+                }else if(sceneAddRemove == 'show'){
+                  log("entity showing " )
+                  entity.getComponent(componentsToCheck[p]).visible=true
+                }
+              }
+            }
           }else if(!entity){
             if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " for action " + sceneAddRemove,null)
           }
@@ -442,7 +466,7 @@ if(props.clickable){
             let transformChild = entityToDetach.getComponent(Transform)
             let transformParent = entityTarget.getComponent(Transform)
             //TODO only detatch if is its parent
-            log("last parent " + tempLastHost.name);
+            log("last parent UU" + tempLastHost.name);
             
             transformChild.rotation = getEntityWorldRotation(entityToDetach);
               
@@ -451,7 +475,7 @@ if(props.clickable){
             //drops position well
             transformChild.position = getEntityWorldPosition(entityToDetach)
             //TODO can we push this into getEntityWorldPosition?
-            this.adjustForSceneRotation(transformChild.position,entityToDetach)
+            //this.adjustForSceneRotation(transformChild.position,entityToDetach)
 
             transformChild.scale = transformChild.scale.multiply(transformParent.scale)
             //FIXME must hold its old parent
@@ -1466,7 +1490,6 @@ function createTargetList(target: string, targets: any) {
         if(targetsItm.indexOf("$") != targetsItm.length-1) targetsItm += "$"
 
         if(!dict[targetsItm]){
-          dict[targetsItm]=targetsItm
           dict[target]=new RegExp(targetsItm)
         }else{
           log("duplicate item found skipping " + targetsItm)
@@ -1486,7 +1509,7 @@ function createTargetList(target: string, targets: any) {
   for(const p in dict){
     targetList.push(dict[p])
   }
-
+  log("returning " + targetList)
   return targetList
 }
 

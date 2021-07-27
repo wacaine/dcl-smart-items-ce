@@ -2,7 +2,7 @@ import { ENTITY_CACHE_BY_NAME_MAP,computeFaceAngle,computeMoveVector } from './u
 import { Logger,jsonStringifyActions,jsonStringifyActionsFull } from './logging'
 
 export type TweenType = 'move' | 'rotate' | 'rotate-q' | 'scale' | 'follow-path'
-export type SceneChangeAddRmType = 'add' | 'remove'
+export type SceneChangeAddRmType = 'add' | 'remove' | 'show' | 'hide'
 export type RepeatActionType = 'none' | 'absolute' | 'relative' | 'reverse'
 export type TrackingActionType = 'none' | 'current' | 'meet' | 'follow'
 export type TargetOfInterestType = 'entity' | 'player'
