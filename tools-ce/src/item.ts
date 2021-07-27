@@ -1447,7 +1447,6 @@ function createTargetList(target: string, targets: any) {
   if (target && target !== undefined){
     if(!dict[target]){
       dict[target]=target
-      targetList.push(target);
     }else{
       log("duplicate item found skipping " + target)
     }
@@ -1472,7 +1471,6 @@ function createTargetList(target: string, targets: any) {
         //is full name
         if(!dict[targetsItm]){
           dict[targetsItm]=targetsItm
-          targetList.push(targetsItm);
         }else{
           log("duplicate item found skipping " + targetsItm)
         }
