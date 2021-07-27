@@ -95,6 +95,7 @@ The target item will rotate towards the player at a configurable speed for how f
 | Parameter                            | Description                                                                                                                      |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | Item                                 | Item to face player |
+| Items (Advanced)                      | Items to face player. This is an advanced feature that lets you list more than one item.  If you wanted more than one object to do the same thing you do not have to configure each one TODO_LINK_ITEMS_ADVANCED |
 | Lock Mode                            | If you choose to lock rotation by x,y,z below defines how.  Item Axis - will lock rotation based on the center of the item how ever its rotated; Scene Axis - will lock rotation relative to absolute x,y,z |
 | Lock X                               | Prevent rotation on X axis per lock mode above |
 | Lock Y                               | Prevent rotation on Y axis per lock mode above |
@@ -114,6 +115,7 @@ The target item will rotate towards the item of interest at a configurable speed
 | Parameter                            | Description                                                                                                                      |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | Item                                 | Item to face item of interest |
+| Items (Advanced)                      | Items to face item of interest. This is an advanced feature that lets you list more than one item.  If you wanted more than one object to do the same thing you do not have to configure each one TODO_LINK_ITEMS_ADVANCED |
 | Look At Item                         | Item to to be faced |
 | Lock Mode                            | If you choose to lock rotation by x,y,z below defines how.  Item Axis - will lock rotation based on the center of the item how ever its rotated; Scene Axis - will lock rotation relative to absolute x,y,z |
 | Lock X                               | Prevent rotation on X axis per lock mode above |
@@ -134,7 +136,8 @@ The target item will move towards the target item at a configurable speed for ho
 
 | Parameter                            | Description                                                                                                                      |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| Item                                 | Item to face item of interest |
+| Item                                 | Item to move to item of interest |
+| Items (Advanced)                     | Items to move to item of interest. This is an advanced feature that lets you list more than one item.  If you wanted more than one object to do the same thing you do not have to configure each one TODO_LINK_ITEMS_ADVANCED |
 | Lock Mode                            | If you choose to lock rotation by x,y,z below defines how.  Item Axis - will lock rotation based on the center of the item how ever its rotated; Scene Axis - will lock rotation relative to absolute x,y,z |
 | Lock X                               | Prevent rotation on X axis per lock mode above |
 | Lock Y                               | Prevent rotation on Y axis per lock mode above |
@@ -158,7 +161,8 @@ The target item will move towards the player at a configurable speed for how fas
 
 | Parameter                            | Description                                                                                                                      |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| Item                                 | Item to face player |
+| Item                                 | Item to move to player |
+| Items (Advanced)                      | Items to move to player. This is an advanced feature that lets you list more than one item.  If you wanted more than one object to do the same thing you do not have to configure each one TODO_LINK_ITEMS_ADVANCED |
 | Lock X                               | Prevent rotation on X axis per lock mode above |
 | Lock Y                               | Prevent rotation on Y axis per lock mode above |
 | Lock Z                               | Prevent rotation on Z axis per lock mode above |
@@ -179,6 +183,7 @@ The target item will follow a path of defined items. This is like move to item h
 | Parameter                            | Description                                                                                                                      |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | Item                                 | Item to be follow the path |
+| Items (Advanced)                      | Items to follow the path. This is an advanced feature that lets you list more than one item.  If you wanted more than one object to do the same thing you do not have to configure each one TODO_LINK_ITEMS_ADVANCED |
 | Move to Item (1-5)                             | Item to move to.  Order picked will be order traversed |
 | Return to First                              | If enabled will return to start.  If not will stop at last 'move to item' |
 | Face Forward                              | If enabled will rotate the object to be parrellel to the path as it moves |
@@ -196,6 +201,7 @@ Action will let you remove/add an object. Not the most elegant way to handle the
 | Parameter                            | Description                                                                                                                      |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | Item                                 | Item to be add/removed |
+| Items (Advanced)                      | Items to be add/removed. This is an advanced feature that lets you list more than one item.  If you wanted more than one object to do the same thing you do not have to configure each one TODO_LINK_ITEMS_ADVANCED |
 | Action                              | Add will add item back to scene.  Remove will remove item from scene |
 
 
@@ -208,6 +214,7 @@ Will attach 1 item to another giving the attached item the position, rotation, s
 | Parameter                            | Description                                                                                                                      |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | Item                                 | Item to be attached |
+| Items (Advanced)                      | Items to be attached. This is an advanced feature that lets you list more than one item.  If you wanted more than one object to do the same thing you do not have to configure each one TODO_LINK_ITEMS_ADVANCED |
 | Attach To                              | Item to be attached to/make the parent |
 | Attach To Origin                              | Attach item's center to the parents center  |
 | X Offset                              | Adjust x position. In case attached item and parent do not line up how you like you can try too manually align how you want  |
@@ -224,6 +231,7 @@ Will detach 1 item to another giving the attached item the position, rotation, s
 | Parameter                            | Description                                                                                                                      |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | Item                                 | Item to be detached |
+| Items (Advanced)                      | Items to be detached. This is an advanced feature that lets you list more than one item.  If you wanted more than one object to do the same thing you do not have to configure each one TODO_LINK_ITEMS_ADVANCED |
 | Attach To                              | The parent to be detached from |
 
 
