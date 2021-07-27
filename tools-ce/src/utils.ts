@@ -3,6 +3,9 @@ const logger = new Logger("utils.",{})
 
 export const getEntityByName = (name: string,altEntity?: Record<string, IEntity>) :IEntity =>
   {
+    const METHOD_NAME = "getEntityByName"
+    if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[name,altEntity] )
+
     let val = Object.keys(engine.entities)
         .map((key) => engine.entities[key])
         .filter((entity) => (entity as Entity).name === name)[0]
@@ -17,6 +20,7 @@ export const getEntityByName = (name: string,altEntity?: Record<string, IEntity>
 export const getEntityByRegex = (name: RegExp,altEntity?: Record<string, IEntity>) :IEntity[] => {
     const METHOD_NAME = "getEntityByRegex"
     if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[name,altEntity] )
+    
   name.lastIndex = 0 //reset regex if already used
   
   let val:IEntity[] = Object.keys(engine.entities)
@@ -34,18 +38,24 @@ export const getEntityByRegex = (name: RegExp,altEntity?: Record<string, IEntity
         let dict = {}
         
         for(const p in val){
+            if(!val[p] || val[p]===undefined) continue
+            
+            let entityName = (val[p] as Entity).name;
             if(!dict[p]){
-                dict[p] = valAlt[p];
+                dict[entityName] = val[p];
             }else{
                 log("duplicate item found skipping " + p)
-                if(logger.isDebugEnabled()) logger.trace( METHOD_NAME,"duplicate item found skipping " + p,[name,altEntity] )
+                if(logger.isDebugEnabled()) logger.trace( METHOD_NAME,"duplicate item found skipping " + entityName,[name,altEntity] )
             }
         }
         for(const p in valAlt){
+            if(!valAlt[p] || valAlt[p]===undefined) continue
+
+            let entityName = (valAlt[p] as Entity).name;
             if(!dict[p]){
-                dict[p] = valAlt[p];
+                dict[entityName] = valAlt[p];
             }else{
-                if(logger.isDebugEnabled()) logger.trace( METHOD_NAME,"duplicate item found in valAlt skipping " + p,[name,altEntity] )
+                if(logger.isDebugEnabled()) logger.trace( METHOD_NAME,"duplicate item found in valAlt skipping " + entityName,[name,altEntity] )
             }
         }
 
@@ -58,8 +68,8 @@ export const getEntityByRegex = (name: RegExp,altEntity?: Record<string, IEntity
     }
   }
 
-  if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"RETURN",val )
-
+  if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"EXIT",val )
+  log("returning " + val)
   return val;
 }
 
