@@ -375,7 +375,7 @@
         {
           "id": "numberOfSegments",
           "label": "# of Segments/Curve",
-          "type": "float",
+          "type": "integer",
           "default": 20
         },
         {
