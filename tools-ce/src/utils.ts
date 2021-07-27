@@ -1,3 +1,6 @@
+import { Logger, LoggerLevel } from './logging'
+const logger = new Logger("utils.",{})
+
 export const getEntityByName = (name: string,altEntity?: Record<string, IEntity>) :IEntity =>
   {
     let val = Object.keys(engine.entities)
@@ -12,6 +15,8 @@ export const getEntityByName = (name: string,altEntity?: Record<string, IEntity>
   }
 
 export const getEntityByRegex = (name: RegExp,altEntity?: Record<string, IEntity>) :IEntity[] => {
+    const METHOD_NAME = "getEntityByRegex"
+    if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[name,altEntity] )
   name.lastIndex = 0 //reset regex if already used
   
   let val:IEntity[] = Object.keys(engine.entities)
@@ -20,22 +25,30 @@ export const getEntityByRegex = (name: RegExp,altEntity?: Record<string, IEntity
 
   if(!val) val = []
 
-  log("checking in removed list " + altEntity + " "  + ((altEntity) ? Object.keys(altEntity).length: 0))
   if( altEntity && Object.keys(altEntity).length>0 ){
-    log("checking in removed list " + altEntity.length + " " + Object.keys(altEntity) )
     let valAlt:IEntity[] = Object.keys(altEntity)
         .map((key) => altEntity[key])
         .filter((entity) => name.test((entity as Entity).name))
 
     if(valAlt && valAlt.length > 0){
         let dict = {}
-        for(const p in valAlt){
-            dict[p] = valAlt[p];
-        }
-        //concat active entities second to overwrite non active is that somehow is a thing
+        
         for(const p in val){
-            dict[p] = val[p];
+            if(!dict[p]){
+                dict[p] = valAlt[p];
+            }else{
+                log("duplicate item found skipping " + p)
+                if(logger.isDebugEnabled()) logger.trace( METHOD_NAME,"duplicate item found skipping " + p,[name,altEntity] )
+            }
         }
+        for(const p in valAlt){
+            if(!dict[p]){
+                dict[p] = valAlt[p];
+            }else{
+                if(logger.isDebugEnabled()) logger.trace( METHOD_NAME,"duplicate item found in valAlt skipping " + p,[name,altEntity] )
+            }
+        }
+
         //now to list it
         let valConcat:IEntity[]=new Array()
         for(const p in dict){
@@ -44,10 +57,16 @@ export const getEntityByRegex = (name: RegExp,altEntity?: Record<string, IEntity
         val = valConcat
     }
   }
+
+  if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"RETURN",val )
+
   return val;
 }
 
 export const getEntityBy = (name: any,altEntity?: Record<string, IEntity>) : IEntity[] => {
+    const METHOD_NAME = "getEntityBy"
+    if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[name,altEntity] )
+
     let val:IEntity[] = null;
     log("getEntityBy " + name + " altEntity: " + altEntity)
     if( typeof name == "string"){
@@ -60,6 +79,7 @@ export const getEntityBy = (name: any,altEntity?: Record<string, IEntity>) : IEn
     if(!val){
         val = []
     }
+    if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"RETURN",val )
     return val;
 }
 
