@@ -456,6 +456,50 @@
             }
           ],
           "default": "add"
+        },
+        {
+          "id": "multiplayer",
+          "label": "Affect everyone",
+          "type": "boolean",
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "sceneShowHide",
+      "label": "Scene Show/Hide",
+      "parameters": [
+        {
+          "id": "target",
+          "label": "Item",
+          "type": "entity"
+        },
+        {
+          "id": "targets",
+          "label": "Items (Advanced)",
+          "type": "text"
+        },
+        {
+          "id": "sceneAddRemove",
+          "label": "Action",
+          "type": "options",
+          "options": [
+            {
+              "value": "show",
+              "label": "Show"
+            },
+            {
+              "value": "hide",
+              "label": "Hide"
+            }
+          ],
+          "default": "show"
+        },
+        {
+          "id": "multiplayer",
+          "label": "Affect everyone",
+          "type": "boolean",
+          "default": true
         }
       ]
     },
@@ -467,6 +511,11 @@
           "id": "target",
           "label": "Item",
           "type": "entity"
+        },
+        {
+          "id": "targets",
+          "label": "Items (Advanced)",
+          "type": "text"
         },
         {
           "id": "targetOfInterest",
