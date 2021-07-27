@@ -1,7 +1,68 @@
-export const getEntityByName = (name: string) =>
-  Object.keys(engine.entities)
+export const getEntityByName = (name: string,altEntity?: Record<string, IEntity>) :IEntity =>
+  {
+    let val = Object.keys(engine.entities)
+        .map((key) => engine.entities[key])
+        .filter((entity) => (entity as Entity).name === name)[0]
+
+    if(!val&&altEntity){
+        val = altEntity[name]
+    }
+
+    return val;
+  }
+
+export const getEntityByRegex = (name: RegExp,altEntity?: Record<string, IEntity>) :IEntity[] => {
+  name.lastIndex = 0 //reset regex if already used
+  
+  let val:IEntity[] = Object.keys(engine.entities)
     .map((key) => engine.entities[key])
-    .filter((entity) => (entity as Entity).name === name)[0]
+    .filter((entity) => name.test((entity as Entity).name))
+
+  if(!val) val = []
+
+  log("checking in removed list " + altEntity + " "  + ((altEntity) ? Object.keys(altEntity).length: 0))
+  if( altEntity && Object.keys(altEntity).length>0 ){
+    log("checking in removed list " + altEntity.length + " " + Object.keys(altEntity) )
+    let valAlt:IEntity[] = Object.keys(altEntity)
+        .map((key) => altEntity[key])
+        .filter((entity) => name.test((entity as Entity).name))
+
+    if(valAlt && valAlt.length > 0){
+        let dict = {}
+        for(const p in valAlt){
+            dict[p] = valAlt[p];
+        }
+        //concat active entities second to overwrite non active is that somehow is a thing
+        for(const p in val){
+            dict[p] = val[p];
+        }
+        //now to list it
+        let valConcat:IEntity[]
+        for(const p in dict){
+            valConcat.push(dict[p])
+        }
+        val = valConcat
+    }
+  }
+  return val;
+}
+
+export const getEntityBy = (name: any,altEntity?: Record<string, IEntity>) : IEntity[] => {
+    let val:IEntity[] = null;
+    log("getEntityBy " + name + " altEntity: " + altEntity)
+    if( typeof name == "string"){
+        val = [getEntityByName(name,altEntity)];
+    }else if(name instanceof RegExp){
+        val = getEntityByRegex(name,altEntity)
+    }else{
+        log("unknown fetch type " + name)
+    }
+    if(!val){
+        val = []
+    }
+    return val;
+}
+
 
 export class CacheEntry<T>{
     value: T
@@ -67,7 +128,7 @@ export class Cache<K,T> implements ILazyMap<string,T>{
     put(name:string,obj:T){
         const currentTime: number = +Date.now()
         this.records[name] = new CacheEntry({value:obj,createTimestamp:currentTime,lastFetchTimestamp:currentTime});
-        this.stats.size = +this.records.length
+        this.stats.size = Object.keys(this.records).length
         return obj;
     }
 
