@@ -233,7 +233,7 @@ export default class Tools implements IScript<Props> {
       if(Math.abs(parentRotEuler.y) > 179 && Math.abs(parentRotEuler.y) < 181 ){
         playerPosition.addInPlace(lastTransform.position); //sum the adjusted x,z
       }else if(Math.abs(parentRotEuler.y) > 89 && Math.abs(parentRotEuler.y) < 91 ){
-        playerPosition.addInPlace(new Vector3( lastTransform.position.z,lastTransform.position.y,lastTransform.position.z ));  //sum the flipped x,z
+        playerPosition.addInPlace(new Vector3( lastTransform.position.z,lastTransform.position.y,lastTransform.position.x ));  //sum the flipped x,z
       }
     }else{
       log("adjustForSceneRotation no work needed")
