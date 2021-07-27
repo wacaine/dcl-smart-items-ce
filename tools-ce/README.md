@@ -1,20 +1,3 @@
-fix follow item path mirror
-
-fix sync 12 vs 11
-fix sync reply before response
-WIP clean up code
-DONE refactor
-WIP fix add/remove persist parent object
-DONE removeAction.clone and do channel.createAction
-adjustForSceneRotation - need to test with odd shapped parcels
-WIP cache target of integrest so does not lookup each time
-need to recurse in for follow/face player and hardcode the values into onCompletes
-
-
-motion control
-	change speed,repeat? would require look ahead
-apply force
-
 # Smart Item: Toolbox CE
 
 
@@ -94,6 +77,11 @@ Syncronious only use be registered to the initiator (the one invoking the action
 
 Previously you could execute just one Rotation, Move, or Scale at a time.  Executing two at the same time will cancel one of them out.  Added the ability to enable 1 Rotation + 1 Move + 1 Scale all at the same time.    More than 1 of these actions at the same time will have the same cancelation effect as the first just like today but only against that action type: move, rotate or scale.  Any other action types could continue.
 
+### Improved Animate Action
+
+Added weight + layer
+
+[https://docs.decentraland.org/development-guide/3d-model-animations/](https://docs.decentraland.org/development-guide/3d-model-animations/)
 
 ## New Actions
 
@@ -308,10 +296,11 @@ TODO
 | End Action Position                               | Will track the item/player based its future/end position if that item/player is in motion.  If not in motion this has the same effect as "Current Position".  It will be  straight path towards this point.  |
 | Follow                               | Will track the item/player based on its position at that moment in time.  It will auto correct as the tracked item moves.  This will produce a curved path |
 
+
+
 ## Multiplayer Support
 
 Listed here are modes/params that I have not thoroughly tested for multi player syncability
 
-* Repeat Types: Absolute, Relative, Mirror.   None should be fine
 * Target Tracking Types: Follow.   Current Position/En Action Position should be fine
 * Scene Add/Remove - while an item is removed from the scene it will not recieve updates to item syncing
