@@ -37,7 +37,7 @@ export const getEntityByRegex = (name: RegExp,altEntity?: Record<string, IEntity
             dict[p] = val[p];
         }
         //now to list it
-        let valConcat:IEntity[]
+        let valConcat:IEntity[]=new Array()
         for(const p in dict){
             valConcat.push(dict[p])
         }
