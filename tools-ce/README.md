@@ -99,7 +99,7 @@ The target item will rotate towards the player at a configurable speed for how f
 | Lock X                               | Prevent rotation on X axis per lock mode above |
 | Lock Y                               | Prevent rotation on Y axis per lock mode above |
 | Lock Z                               | Prevent rotation on Z axis per lock mode above |
-| Curve type                           | Curve type is the rate at which the item rotates over time.  For example start off slow and speed up.  TODO LINK_TO_CURVE_TYPE_LIST |
+| Curve type                           | Curve type is the rate at which the item rotates over time.  For example start off slow and speed up.  [See Curve Types](#Curve-Type) |
 | Repeat Type                           | Once the action is completed should it repeat and if so how.   TODO LINK_TO_REPEAT_TYPE_LIST |
 | Speed                                | Overall speed for which the item rotates |
 | When transition finished             | Select a whole set of new actions when this action completes |
@@ -119,7 +119,7 @@ The target item will rotate towards the item of interest at a configurable speed
 | Lock X                               | Prevent rotation on X axis per lock mode above |
 | Lock Y                               | Prevent rotation on Y axis per lock mode above |
 | Lock Z                               | Prevent rotation on Z axis per lock mode above |
-| Curve type                           | Curve type is the rate at which the item rotates over time.  For example start off slow and speed up.  TODO LINK_TO_CURVE_TYPE_LIST |
+| Curve type                           | Curve type is the rate at which the item rotates over time.  For example start off slow and speed up.  [See Curve Types](#Curve-Type) |
 | Repeat Type                           | Once the action is completed should it repeat and if so how.   TODO LINK_TO_REPEAT_TYPE_LIST |
 | Target Tracking Type                           | COMING SOON - During the motion how should it track the target object.   TODO LINK_TO_TARGETT_TRACKING_TYPE_LIST |
 | Speed                                | Overall speed for which the item rotates |
@@ -141,7 +141,7 @@ The target item will move towards the target item at a configurable speed for ho
 | Lock Z                               | Prevent rotation on Z axis per lock mode above |
 | Move Percent of Distance                  | Percent of distance to move between start and end |
 | Move No Closer Than                  | Item will move no closer than N units from end |
-| Curve type                           | Curve type is the rate at which the item rotates over time.  For example start off slow and speed up.  TODO LINK_TO_CURVE_TYPE_LIST |
+| Curve type                           | Curve type is the rate at which the item rotates over time.  For example start off slow and speed up.  [See Curve Types](#Curve-Type) |
 | Repeat Type                           | Once the action is completed should it repeat and if so how.   TODO LINK_TO_REPEAT_TYPE_LIST |
 | Target Tracking Type                           | During the motion how should it track the target object.   TODO LINK_TO_TARGETT_TRACKING_TYPE_LIST |
 | Speed                                | Overall speed for which the item rotates |
@@ -164,7 +164,7 @@ The target item will move towards the player at a configurable speed for how fas
 | Lock Z                               | Prevent rotation on Z axis per lock mode above |
 | Move Percent of Distance                  | Percent of distance to move between start and end |
 | Move No Closer Than                  | Item will move no closer than N units from end |
-| Curve type                           | Curve type is the rate at which the item rotates over time.  For example start off slow and speed up.  TODO LINK_TO_CURVE_TYPE_LIST |
+| Curve type                           | Curve type is the rate at which the item rotates over time.  For example start off slow and speed up.  [See Curve Types](#Curve-Type) |
 | Repeat Type                           | Once the action is completed should it repeat and if so how.   TODO LINK_TO_REPEAT_TYPE_LIST |
 | Target Tracking Type                           | COMING SOON - During the motion how should it track the target object.   TODO LINK_TO_TARGETT_TRACKING_TYPE_LIST |
 | Speed                                | Overall speed for which the item rotates |
