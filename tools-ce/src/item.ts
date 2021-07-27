@@ -229,10 +229,14 @@ export default class Tools implements IScript<Props> {
 
       //TODO test on odd shaped parcel
       let parentRotEuler = lastTransform.rotation.eulerAngles
+      
+      //const parRotAbsX = Math.abs(parentRotEuler.x)
+      const parRotAbsY = Math.abs(parentRotEuler.y)
+      //const parRotAbsZ = Math.abs(parentRotEuler.z)
       //16,0,16 for 180 counter:16,0,16// 0,0,16 for 90, counter 16,0,0// 16,0,0 for -90 counter:0,0,16
-      if(Math.abs(parentRotEuler.y) > 179 && Math.abs(parentRotEuler.y) < 181 ){
+      if(parRotAbsY > 179 && parRotAbsY < 181 ){
         playerPosition.addInPlace(lastTransform.position); //sum the adjusted x,z
-      }else if(Math.abs(parentRotEuler.y) > 89 && Math.abs(parentRotEuler.y) < 91 ){
+      }else if( (parRotAbsY > 89 && parRotAbsY < 91) || (parRotAbsY > 269 && parRotAbsY < 271) ){
         playerPosition.addInPlace(new Vector3( lastTransform.position.z,lastTransform.position.y,lastTransform.position.x ));  //sum the flipped x,z
       }
     }else{
