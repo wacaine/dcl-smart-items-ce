@@ -13,7 +13,7 @@ export const getEntityByName = (name: string,altEntity?: Record<string, IEntity>
     if(!val&&altEntity){
         val = altEntity[name]
     }
-
+    if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"RETURN",val )
     return val;
   }
 
@@ -41,21 +41,21 @@ export const getEntityByRegex = (name: RegExp,altEntity?: Record<string, IEntity
             if(!val[p] || val[p]===undefined) continue
             
             let entityName = (val[p] as Entity).name;
-            if(!dict[p]){
+            if(!dict[entityName]){
                 dict[entityName] = val[p];
             }else{
                 log("duplicate item found skipping " + p)
-                if(logger.isDebugEnabled()) logger.trace( METHOD_NAME,"duplicate item found skipping " + entityName,[name,altEntity] )
+                if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,"duplicate item found skipping " + entityName,[name,altEntity] )
             }
         }
         for(const p in valAlt){
             if(!valAlt[p] || valAlt[p]===undefined) continue
 
             let entityName = (valAlt[p] as Entity).name;
-            if(!dict[p]){
+            if(!dict[entityName]){
                 dict[entityName] = valAlt[p];
             }else{
-                if(logger.isDebugEnabled()) logger.trace( METHOD_NAME,"duplicate item found in valAlt skipping " + entityName,[name,altEntity] )
+                if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,"duplicate item found in valAlt skipping " + entityName,[name,altEntity] )
             }
         }
 
@@ -68,8 +68,7 @@ export const getEntityByRegex = (name: RegExp,altEntity?: Record<string, IEntity
     }
   }
 
-  if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"EXIT",val )
-  log("returning " + val)
+  if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"RETURN",val )
   return val;
 }
 
@@ -78,7 +77,7 @@ export const getEntityBy = (name: any,altEntity?: Record<string, IEntity>) : IEn
     if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[name,altEntity] )
 
     let val:IEntity[] = null;
-    log("getEntityBy " + name + " altEntity: " + altEntity)
+
     if( typeof name == "string"){
         val = [getEntityByName(name,altEntity)];
     }else if(name instanceof RegExp){
