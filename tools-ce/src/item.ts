@@ -148,6 +148,8 @@ const _SCENE = getEntityByName("_scene");
 //leave player out here as static.  If I init it inside the method for some resaon the player position reports 0s first usage????
 const player = Camera.instance
 
+const logger = new Logger("item.js",{})
+
 export default class Tools implements IScript<Props> {
   removedEntities: Record<string, IEntity> = {}
   canvas = new UICanvas()
@@ -212,14 +214,14 @@ export default class Tools implements IScript<Props> {
     let loopCnt = 0;
     let entPar:IEntity = entity
     let lastTransform:Transform = null;
-    log("zNorth entPar "+loopCnt+" " + entPar+ " " + entPar.uuid)
+    //log("zNorth entPar "+loopCnt+" " + entPar+ " " + entPar.uuid)
     while(entPar != null && entPar.getParent() != null){
       entPar = entPar.getParent()
       
-        log("entPar " +loopCnt+" " + entPar+ " " + entPar.uuid)
+        //log("entPar " +loopCnt+" " + entPar+ " " + entPar.uuid)
       if(entPar.hasComponent(Transform)){
         lastTransform = entPar.getComponent(Transform)
-        log("entPar " +loopCnt+" got it from " + entPar + " " + entPar.uuid + " position " + lastTransform.position + " " + lastTransform.rotation.eulerAngles )
+        //log("entPar " +loopCnt+" got it from " + entPar + " " + entPar.uuid + " position " + lastTransform.position + " " + lastTransform.rotation.eulerAngles )
       }
       loopCnt++;
     }
@@ -346,15 +348,10 @@ if(props.clickable){
             //for(const p:ComponentConstructor<Shape> in [GLTFShape,NFTShape,OBJShape,PlaneShape,SphereShape,BoxShape,CircleShape,ConeShape,CylinderShape,Animator]){
             const componentsToCheck = [GLTFShape,NFTShape,OBJShape,PlaneShape,SphereShape,BoxShape,CircleShape,ConeShape,CylinderShape,Animator]
             for(const p in componentsToCheck){
-            //for(const p in [GLTFShape]){
-              log("entity checking if has " + componentsToCheck[p])
               if(entity.hasComponent(componentsToCheck[p])){
-                log("entity has " + componentsToCheck[p])
                 if(sceneAddRemove == 'hide'){
-                  log("entity hiding " )
                   entity.getComponent(componentsToCheck[p]).visible=false
                 }else if(sceneAddRemove == 'show'){
-                  log("entity showing " )
                   entity.getComponent(componentsToCheck[p]).visible=true
                 }
               }
@@ -1468,6 +1465,9 @@ if(props.clickable){
   }
 }
 function createTargetList(target: string, targets: any) {
+  const METHOD_NAME = "createTargetList"
+  if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY", [target,targets] )
+
   const targetList=new Array()
 
   const dict = {}
@@ -1476,7 +1476,7 @@ function createTargetList(target: string, targets: any) {
     if(!dict[target]){
       dict[target]=target
     }else{
-      log("duplicate item found skipping " + target)
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,"duplicate item found skipping " + target, null )
     }
   }
 
@@ -1492,14 +1492,14 @@ function createTargetList(target: string, targets: any) {
         if(!dict[targetsItm]){
           dict[target]=new RegExp(targetsItm)
         }else{
-          log("duplicate item found skipping " + targetsItm)
+          if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,"duplicate item found skipping " + targetsItm, null )
         }
       }else{
         //is full name
         if(!dict[targetsItm]){
           dict[targetsItm]=targetsItm
         }else{
-          log("duplicate item found skipping " + targetsItm)
+          if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,"duplicate item found skipping " + targetsItm, null )
         }
       }
     }
@@ -1509,7 +1509,7 @@ function createTargetList(target: string, targets: any) {
   for(const p in dict){
     targetList.push(dict[p])
   }
-  log("returning " + targetList)
+  if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"RETURN", targetList )
   return targetList
 }
 
