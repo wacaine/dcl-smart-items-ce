@@ -10,7 +10,7 @@ import {
   RotateData,
   TweenableVO,
 } from './tween'
-import { getEntityByName,computeFaceAngle,computeMoveVector } from './utils'
+import { getEntityByName,getEntityBy,computeFaceAngle,computeMoveVector } from './utils'
 import { Logger,jsonStringifyActions,jsonStringifyActionsFull,jsonStringifyTweenable,LOGGING_CONF, LoggerLevel } from './logging'
 import { setTimeout, DelaySystem } from './delay'
 import { AnimatedData, Animated, AnimType } from './animation'
@@ -274,24 +274,39 @@ if(props.clickable){
     }
     */
     channel.handleAction<Tween>('sceneAddRemove', (action) => {
-      const { target, sceneAddRemove, ...tween } = action.values
+      const { target,targets, sceneAddRemove, ...tween } = action.values
       const METHOD_NAME = "channel.handle.sceneAddRemove"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
-      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called " + jsonStringifyActions(action) + " " + target + " action " + sceneAddRemove,null)
-
-      let entity = getEntityByName(target)
-      if(sceneAddRemove=='add'&&entity==null&&this.removedEntities[target]!=null){
-        entity=this.removedEntities[target]
+      if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called " + jsonStringifyActions(action) + " " + target + "/" + targets + " action " + sceneAddRemove,null)
+      if(!tween.multiplayer && action.sender != channel.id){
+        if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
+        return;
       }
+
+      const targetList = createTargetList(target, targets)
+
+      for(const p in targetList){
+        const targetItm = targetList[p]
+        const entities:IEntity[] = getEntityBy(targetItm,this.removedEntities)
+        //scan the removed ones too
+        
+        for(const p in entities){
+          let entity = entities[p]
+          
       if (entity && entity !== undefined && sceneAddRemove == 'remove') {
         engine.removeEntity(entity);
-        this.removedEntities[target]=entity;
+            this.removedEntities[(entity as Entity).name]=entity;
       }else if(entity && sceneAddRemove=='add'){
         engine.addEntity(entity);
-        delete this.removedEntities[target];
+            delete this.removedEntities[(entity as Entity).name];
       }else if(!entity){
-        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " for action " + sceneAddRemove,null)
+            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " for action " + sceneAddRemove,null)
+          }
+        }
       }
+      channel.sendActions(tween.onComplete)
+      
+    } )
       
       channel.sendActions(tween.onComplete)
     } )
@@ -1288,3 +1303,21 @@ if(props.clickable){
     //TODO handle onStart
   }
 }
+function createTargetList(target: string, targets: any) {
+  const targetList = []
+  if (target && target !== undefined)
+    targetList.push(target)
+  if (targets && targets !== undefined) {
+    let targetsArr = targets.split(",")
+    for (const p in targetsArr) {
+      let targetsItm = targetsArr[p]
+      if (targetsItm && targetsItm.trim() != '') {
+        if(targetsItm.indexOf("^") != 0) targetsItm = "^"+targetsItm
+        if(targetsItm.indexOf("$") != targetsItm.length-1) targetsItm += "$"
+        targetList.push(new RegExp(targetsItm))
+      }
+    }
+  }
+  return targetList
+}
+

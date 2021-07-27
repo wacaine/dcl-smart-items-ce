@@ -10,6 +10,8 @@ export type TargetOfInterestType = 'entity' | 'player'
 export type Tween = {
  // transition: number
   target: string,
+  targets: string,
+  multiplayer: boolean,
   targetOfInterestType: TargetOfInterestType
   targetOfInterest: string //transient conveted to x,y,z ; now needed for active tracking
   pathItem1: string //transient conveted to curvePoints
