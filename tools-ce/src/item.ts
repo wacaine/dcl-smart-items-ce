@@ -303,16 +303,16 @@ if(props.clickable){
           if (entity && entity !== undefined) {
             let entityName = (entity as Entity).name;
             if(sceneAddRemove == 'remove'){
-              if(entity.isAddedToEngine()){
+              if(entity.alive){
                 engine.removeEntity(entity);
-                this.removedEntities[entityName]=entity;
+                this.removedEntities[entityName]=entity; //TODO remove always to ensure clean index??
               }else{
                 if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "Is already removed from engine " + " " + entityName + " for action " + sceneAddRemove,null)
               }
             }else if(sceneAddRemove=='add'){
-              if(!entity.isAddedToEngine()){
+              if(!entity.alive){
                 engine.addEntity(entity);
-                delete this.removedEntities[(entity as Entity).name];
+                delete this.removedEntities[(entity as Entity).name];  //TODO remove always to ensure clean index??
               }else{
                 if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "Is already added to engine " + " " + entityName + " for action " + sceneAddRemove,null)
               }
