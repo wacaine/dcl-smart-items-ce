@@ -13,8 +13,40 @@
       "default": true
     },
     {
+      "id": "clickButton",
+      "label": "Click Button",
+      "type": "options",
+      "options": [
+        {
+          "value": "POINTER",
+          "label": "Click"
+        },
+        {
+          "value": "PRIMARY",
+          "label": "Primary Button"
+        },
+        {
+          "value": "SECONDARY",
+          "label": "Secondary Button"
+        }
+      ],
+      "default": "POINTER"
+    },
+    {
       "id": "enabled",
       "label": "Click Enabled",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "id": "enabledClickSound",
+      "label": "Click Sound Enabled",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "id": "visible",
+      "label": "Visible",
       "type": "boolean",
       "default": true
     },
