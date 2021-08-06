@@ -435,7 +435,7 @@ if(props.clickable){
             }
             
           }else{
-            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entityToAttach + " and/or " + tween.targetOfInterest  + " " + entityTarget,null)
+            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entityToAttach + " and/or " + tween.targetOfInterest  + " " + entityTarget,null)
           }
         }
       }
@@ -479,7 +479,7 @@ if(props.clickable){
             entityToDetach.setParent(tempLastHost)
             
           }else{
-            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entityToDetach + " and/or " + tween.targetOfInterest  + " " + entityTarget,null)
+            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entityToDetach + " and/or " + tween.targetOfInterest  + " " + entityTarget,null)
           }
         }
       }
@@ -505,6 +505,10 @@ if(props.clickable){
           const entity = entities[p]
           
           if (entity && entity !== undefined) {
+            if(!entity.hasComponent(Transform)){
+              if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "entity " + targetItm + " does not have the component Transform. skipping",null)
+              continue;
+            }
             const currentTime: number = +Date.now()
             let transform = entity.getComponent(Transform)
 
@@ -590,7 +594,7 @@ if(props.clickable){
               timestamp: currentTime,
             })
             
-            if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "adding Tweenable Component to " + target + " " + jsonStringifyTweenable(tweenable),null)
+            if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "adding Tweenable Component to " + targetItm + " " + jsonStringifyTweenable(tweenable),null)
             entity.addComponentOrReplace(new PathData(cpoints,curvePoints,closeLoop,origin))
             if(tween.turnToFaceNext){
               entity.addComponentOrReplace(new RotateData(originQ,tween.lockX,tween.lockY,tween.lockZ,tween.lockW))
@@ -599,7 +603,7 @@ if(props.clickable){
             entity.addComponentOrReplace(new Syncable())
             
           }else{
-            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity,null)
+            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entity,null)
           }
         }
       }
@@ -620,6 +624,10 @@ if(props.clickable){
         for(const p in entities){
           const entity = entities[p]
           if (entity && entity !== undefined) {
+            if(!entity.hasComponent(Transform)){
+              if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "entity " + targetItm + " does not have the component Transform. skipping",null)
+              continue;
+            }
             if(tween.tweenControlMove && entity.hasComponent(TweenableMove)){
               this.processControlAction('move',entity,tween.controlMode,TweenableMove)
             }
@@ -630,7 +638,7 @@ if(props.clickable){
               this.processControlAction('scale',entity,tween.controlMode,TweenableScale)
             }
           }else{
-            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity,null)
+            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entity,null)
           }
         }
       }
@@ -644,6 +652,13 @@ if(props.clickable){
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + action.values.target + " -> player " + action.sender , null)
       
+      if(tween.trackingType=='follow' && tween.multiplayer){
+        //warn not supported at the moment. will act like 'current'
+        if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Tracking type 'follow' is not supported for multiplayer (seen by everyone) at the moment. It will act like tracking: current",null)
+      }
+
+      //TODO add sender check must be invoker??!?!
+
       const targetList = createTargetList(target, targets)
       for(const p in targetList){
         const targetItm = targetList[p]
@@ -652,6 +667,10 @@ if(props.clickable){
         for(const p in entities){
           const entityToMove = entities[p]
           if (entityToMove && action.sender === channel.id) {
+            if(!entityToMove.hasComponent(Transform)){
+              if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "entity " + targetItm + " does not have the component Transform. skipping",null)
+              continue;
+            }
             let transformTarget = entityToMove.getComponent(Transform)
             
             let playerPosition = action.values.playerPosition;
@@ -702,7 +721,7 @@ if(props.clickable){
             //send move so everyone else gets it
             channel.sendActions( [clonedAction] )
           }else if(!entityToMove){
-            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entityToMove,null)
+            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entityToMove,null)
           }else{
             if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "moveToPlayer called by " + action.sender + ".  Is not me " + channel.id + " so skipping",null)
           }
@@ -728,6 +747,10 @@ if(props.clickable){
         for(const p in entities){
           const entityToMove = entities[p]
           if (entityDest && entityToMove) {
+            if(!entityToMove.hasComponent(Transform)){
+              if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "entity " + targetItm + " does not have the component Transform. skipping",null)
+              continue;
+            }
             let transformTarget = entityToMove.getComponent(Transform)
             let transformEnd = entityDest.getComponent(Transform)
 
@@ -751,7 +774,7 @@ if(props.clickable){
 
             channel.sendActions( [clonedAction] )
           }else{
-            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entityToMove + " and/or " + tween.targetOfInterest  + " " + entityDest,null)
+            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entityToMove + " and/or " + tween.targetOfInterest  + " " + entityDest,null)
           }
         }
       }
@@ -775,6 +798,10 @@ if(props.clickable){
         for(const p in entities){
           const entity = entities[p]
           if (entity && entity !== undefined) {
+            if(!entity.hasComponent(Transform)){
+              if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "entity " + targetItm + " does not have the component Transform. skipping",null)
+              continue;
+            }
             let transform = entity.getComponent(Transform)
             let lookAtTransform = entityLookAt.getComponent(Transform)
             // Rotate to face the player
@@ -797,7 +824,7 @@ if(props.clickable){
 
             channel.sendActions([clonedAction])
           }else{
-            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity + " and/or " + tween.targetOfInterest  + " " + entityLookAt,null)
+            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entity + " and/or " + tween.targetOfInterest  + " " + entityLookAt,null)
           }
         }
       }
@@ -811,7 +838,12 @@ if(props.clickable){
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + "/" + targets + "  face player " + action.sender + " vs " + channel.id, null)
 
+      //is sender check required?
       if (action.sender === channel.id) {
+        if(tween.trackingType=='follow' && tween.multiplayer){
+          //warn not supported at the moment. will act like 'current'
+          if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Tracking type 'follow' is not supported for multiplayer (seen by everyone) at the moment. It will act like tracking: current",null)
+        }
         const targetList = createTargetList(target, targets)
         for(const p in targetList){
           const targetItm = targetList[p]
@@ -820,6 +852,10 @@ if(props.clickable){
           for(const p in entities){
             const entity = entities[p]
             if (entity && entity !== undefined) {
+              if(!entity.hasComponent(Transform)){
+                if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "entity " + targetItm + " does not have the component Transform. skipping",null)
+                continue;
+              }
               //FIXME add a already doing this check
 
               //set direction to where the player is
@@ -866,7 +902,7 @@ if(props.clickable){
               //send rotate move so everyone else gets it
               channel.sendActions([clonedAction])
             }else{
-              if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity,null)
+              if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entity,null)
             }
           }
         }
@@ -910,6 +946,11 @@ if(props.clickable){
               }
             }
 
+            if(!entity.hasComponent(Transform)){
+              if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "entity " + targetItm + " does not have the component Transform. skipping",null)
+              continue;
+            }
+
             const origin = entity.getComponent(Transform).position.clone()
             const originQ:Quaternion=entity.getComponent(Transform).rotation.clone();
             
@@ -922,11 +963,11 @@ if(props.clickable){
               sender,
               timestamp: currentTime,
             })
-            if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "adding Tweenable Component to " + target + " " + jsonStringifyTweenable(tweenable),null)
+            if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "adding Tweenable Component to " + targetItm + " " + jsonStringifyTweenable(tweenable),null)
             entity.addComponentOrReplace(tweenable)
             entity.addComponentOrReplace(new Syncable())
           }else{
-            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity,null)
+            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entity,null)
           }
         }
       }
@@ -964,6 +1005,10 @@ if(props.clickable){
                 return
               }
             }
+            if(!entity.hasComponent(Transform)){
+              if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "entity " + targetItm + " does not have the component Transform. skipping",null)
+              continue;
+            }
             const rotOrigin = entity.getComponent(Transform).rotation.clone();
             const origin = rotOrigin.eulerAngles
             const originQ = rotOrigin
@@ -977,11 +1022,11 @@ if(props.clickable){
               sender,
               timestamp: currentTime,
             })
-            if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "adding Tweenable Component to " + target + " " + jsonStringifyTweenable(tweenable),null)
+            if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "adding Tweenable Component to " + targetItm + " " + jsonStringifyTweenable(tweenable),null)
             entity.addComponentOrReplace(tweenable)
             entity.addComponentOrReplace(new Syncable())
           }else{
-            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity,null)
+            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entity,null)
           }
         }
       }
@@ -1019,6 +1064,10 @@ if(props.clickable){
                 return
               }
             }
+            if(!entity.hasComponent(Transform)){
+              if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "entity " + targetItm + " does not have the component Transform. skipping",null)
+              continue;
+            }
             const rotOrigin = entity.getComponent(Transform).rotation.clone();
             const origin = rotOrigin.eulerAngles
             const originQ = rotOrigin
@@ -1032,11 +1081,11 @@ if(props.clickable){
               sender,
               timestamp: currentTime,
             })
-            if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "adding Tweenable Component to " + target + " " + jsonStringifyTweenable(tweenable),null)
+            if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "adding Tweenable Component to " + targetItm + " " + jsonStringifyTweenable(tweenable),null)
             entity.addComponentOrReplace(tweenable)
             entity.addComponentOrReplace(new Syncable())
           }else{
-            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity,null)
+            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entity,null)
           }
         }
       }
@@ -1074,6 +1123,10 @@ if(props.clickable){
                 return
               }
             }
+            if(!entity.hasComponent(Transform)){
+              if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "entity " + targetItm + " does not have the component Transform. skipping",null)
+              continue;
+            }
             const origin = entity.getComponent(Transform).scale.clone()
             const originQ:Quaternion=null;
             
@@ -1086,11 +1139,11 @@ if(props.clickable){
               sender,
               timestamp: currentTime,
             })
-            if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "adding Tweenable Component to " + target + " " + jsonStringifyTweenable(tweenable),null)
+            if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "adding Tweenable Component to " + targetItm + " " + jsonStringifyTweenable(tweenable),null)
             entity.addComponentOrReplace(tweenable)
             entity.addComponentOrReplace(new Syncable())
           }else{
-            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity,null)
+            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entity,null)
           }
         }
       }
@@ -1215,7 +1268,7 @@ if(props.clickable){
                 break
             }
           }else{
-            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + target + " " + entity,null)
+            if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entity,null)
           }
         }
       }
@@ -1464,9 +1517,9 @@ if(props.clickable){
     //TODO handle onStart
   }
 }
-function createTargetList(target: string, targets: any) {
+function createTargetList(target: string, targets: any, delimiter:string = ';') {
   const METHOD_NAME = "createTargetList"
-  if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY", [target,targets] )
+  if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY", [target,targets,delimiter] )
 
   const targetList=new Array()
 
@@ -1481,7 +1534,7 @@ function createTargetList(target: string, targets: any) {
   }
 
   if (targets && targets !== undefined) {
-    let targetsArr = targets.split(",")
+    let targetsArr = targets.split(delimiter)
     for (const p in targetsArr) {
       let targetsItm = targetsArr[p]
       if (targetsItm && targetsItm.trim() != '') {
