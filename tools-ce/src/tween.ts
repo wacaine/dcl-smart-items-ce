@@ -476,11 +476,13 @@ export class TweenSystemMove extends TweenSystem<TweenableMove>{
               //TODO why does move require setting this but not rotateq?
               if(tweenable.repeatAction == 'relative'){
                 if(!tweenable.origin || tweenable.origin !== Vector3){
-                  tweenable.origin = new Vector3()
+                  tweenable.origin = new Vector3().copyFrom(transform.position)
+                  //tweenable.origin.copyFrom(transform.position)
                 }
-                //if(trackingTransform){
+                if(trackingTransform){
                   tweenable.origin.copyFrom(transform.position)
-                //}else if(tweenable.targetOfInterestType == 'player'){
+                }
+                //else if(tweenable.targetOfInterestType == 'player'){
                 //  tweenable.origin.copyFrom(player.position)//is copy required? flyweight for vector storage?
                 //}
               }
