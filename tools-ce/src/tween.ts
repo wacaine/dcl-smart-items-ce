@@ -42,6 +42,8 @@ export type Tween = {
   numberOfSegments: number//for PathData and RotationData
   turnToFaceNext: boolean//REMOVE ME?!? not needed if lock all axis? gate to enable locking??? for PathData and RotationData
   trackingType: TrackingActionType
+  trackingCounter: number
+  trackingInterval: number
   controlMode: string
   tweenControlMove: boolean
   tweenControlRotate: boolean
@@ -201,6 +203,8 @@ export class TweenableVO {
   numberOfSegments: number
   turnToFaceNext: boolean
   trackingType: TrackingActionType
+  trackingCounter: number = 0
+  trackingInterval: number = 0 //TODO CAN WE MAKE THIS BIGGER THAN 0. need to sync transition LERP with counter somehow
   targetOfInterest: string
   targetOfInterestType: TargetOfInterestType
   percentOfDistanceToTravel: number //need for 'follow'
@@ -241,6 +245,8 @@ export class TweenableVO {
     turnToFaceNext?: boolean
     trackingType?: TrackingActionType
     targetOfInterest?: string
+    trackingCounter?: number
+    trackingInterval?: number
     targetOfInterestType?: TargetOfInterestType
     percentOfDistanceToTravel?:number
     moveNoCloserThan?:number
@@ -278,6 +284,8 @@ export class TweenableVO {
     this.numberOfSegments = args.numberOfSegments
     this.turnToFaceNext = args.turnToFaceNext
     this.trackingType = args.trackingType
+    if(args.trackingCounter && args.trackingCounter !== undefined)  this.trackingCounter = args.trackingCounter
+    if(args.trackingInterval && args.trackingInterval !== undefined) this.trackingInterval = args.trackingInterval
     this.targetOfInterest = args.targetOfInterest
     this.targetOfInterestType = args.targetOfInterestType
     this.repeatAction = args.repeatAction
@@ -441,32 +449,41 @@ export class TweenSystemMove extends TweenSystem<TweenableMove>{
             tweenable.y = endDest.y
             tweenable.z = endDest.z
           }else if(tweenable.trackingType == 'follow'){
-            let end = null;
+            tweenable.trackingCounter+=dt
+
+            if(trackingTransform || (tweenable.targetOfInterestType == 'player' && tweenable.trackingCounter >= tweenable.trackingInterval)){
+              tweenable.trackingCounter = 0 // reset counter
               
-            if(trackingTransform){
-              end = new Vector3().copyFrom(trackingTransform.position)//is copy required? flyweight for vector storage?
-            }else if(tweenable.targetOfInterestType == 'player'){
-              if(tweenable.targetOfInterest == tweenable.channel.id){
-                //TODO add if tracking player update camera position  
-                end = new Vector3().copyFrom(player.position)//is copy required? flyweight for vector storage?
-              }else{
-                //not me must hope for a sync
+              let end = null;
+              if(trackingTransform){
+                end = new Vector3().copyFrom(trackingTransform.position)//is copy required? flyweight for vector storage?
+              }else if(tweenable.targetOfInterestType == 'player'){
+                if(tweenable.targetOfInterest == tweenable.channel.id){
+                  //TODO add if tracking player update camera position  
+                  end = new Vector3().copyFrom(player.position)//is copy required? flyweight for vector storage?
+                }else{
+                  //not me must hope for a sync
+                }
               }
-            }
 
-            const endDest = computeMoveVector(start,end,tweenable.lockX,tweenable.lockY,tweenable.lockZ,tweenable.percentOfDistanceToTravel,tweenable.moveNoCloserThan);
+              const endDest = computeMoveVector(start,end,tweenable.lockX,tweenable.lockY,tweenable.lockZ,tweenable.percentOfDistanceToTravel,tweenable.moveNoCloserThan);
 
-            tweenable.x = endDest.x
-            tweenable.y = endDest.y
-            tweenable.z = endDest.z
+              tweenable.x = endDest.x
+              tweenable.y = endDest.y
+              tweenable.z = endDest.z
 
-            //keep updating origin for smooth follow?
-            //TODO why does move require setting this but not rotateq?
-            if(tweenable.repeatAction == 'relative'){
-              if(!tweenable.origin || tweenable.origin !== Vector3){
-                tweenable.origin = new Vector3()
+              //keep updating origin for smooth follow?
+              //TODO why does move require setting this but not rotateq?
+              if(tweenable.repeatAction == 'relative'){
+                if(!tweenable.origin || tweenable.origin !== Vector3){
+                  tweenable.origin = new Vector3()
+                }
+                //if(trackingTransform){
+                  tweenable.origin.copyFrom(transform.position)
+                //}else if(tweenable.targetOfInterestType == 'player'){
+                //  tweenable.origin.copyFrom(player.position)//is copy required? flyweight for vector storage?
+                //}
               }
-              tweenable.origin.copyFrom(transform.position)
             }
             
           }
@@ -479,7 +496,7 @@ export class TweenSystemMove extends TweenSystem<TweenableMove>{
           tweenable.transition += dt * speed
           
           let easingIndex = 0;
-          if(tweenable.repeatAction == 'relative' && tweenable.trackingType && tweenable.trackingType == 'follow'){
+          if(tweenable.repeatAction == 'relative' && tweenable.trackingType && tweenable.trackingType == 'follow' && tweenable.targetOfInterestType != 'player'){
             //when doing follow should not be on a curve
             easingIndex = dt * speed
           }else{
@@ -488,10 +505,10 @@ export class TweenSystemMove extends TweenSystem<TweenableMove>{
               tweenable.curve
             )
           }
-
+          
           transform.position.copyFrom(Vector3.Lerp(start, end, easingIndex))
         } else if (tweenable.transition >= 1) {
-          if(this.logger.isDebugEnabled()) this.logger.debug( METHOD_NAME,tweenable.type + " " +  entity['name'] + " ended; repeatAction:" + tweenable.repeatAction, null )
+          if(this.logger.isDebugEnabled()) this.logger.debug( METHOD_NAME,tweenable.type + " " +  entity['name'] + " ended; repeatAction:" + tweenable.repeatAction + " relative" + tweenable.relative, null )
           
           if(!tweenable.repeatAction || tweenable.repeatAction == 'none'){
             tweenable.transition = -1
@@ -501,6 +518,8 @@ export class TweenSystemMove extends TweenSystem<TweenableMove>{
             // send actions
             tweenable.channel.sendActions(tweenable.onComplete)
           }else{
+            //tweenable.trackingCounter = 0
+            
             if(tweenable.targetOfInterestType == 'player'){
               if(tweenable.targetOfInterest == tweenable.channel.id){
                 //TODO add if tracking player update camera position  
@@ -514,7 +533,6 @@ export class TweenSystemMove extends TweenSystem<TweenableMove>{
               const origPos:Vector3 = tweenable.origin;
 
               //mutate end and start
-              //RISK never stopping getting too big
               tweenable.origin=transform.position.clone()
 
               //should scale relative to the diff between last orig and now
@@ -527,6 +545,7 @@ export class TweenSystemMove extends TweenSystem<TweenableMove>{
 
               //go back to 0 and if over shot etc. adjusts so its smooth
               tweenable.transition = tweenable.transition - 1;
+              
             }else if(tweenable.repeatAction == 'reverse'){
               //go back to 0 and if over shot etc. adjusts so its smooth and keeps in sync
               tweenable.transition = tweenable.transition - 1;
@@ -800,31 +819,36 @@ export class TweenSystemRotate extends TweenSystem<TweenableRotate>{
             tweenable.z = endRotation.z
             tweenable.w = endRotation.w
           }else if(tweenable.trackingType == 'follow'){
-            let lookAtTarget = new Vector3().copyFrom(trackingTransform.position)
-              
-            if(trackingTransform){
-              lookAtTarget = new Vector3().copyFrom(trackingTransform.position)//is copy required? flyweight for vector storage?
-            }else if(tweenable.targetOfInterestType == 'player'){
-              if(tweenable.targetOfInterest == tweenable.channel.id){
-                //TODO add if tracking player update camera position  
-                lookAtTarget = new Vector3().copyFrom(player.position)//is copy required? flyweight for vector storage?
-              }else{
-                //not me must hope for a sync
-              }
-            }
-            
-            let endRotation:Quaternion = computeFaceAngle(lookAtTarget,transform,tweenable.lockMode,tweenable.lockX,tweenable.lockY,tweenable.lockZ);
-            tweenable.x = endRotation.x
-            tweenable.y = endRotation.y
-            tweenable.z = endRotation.z
-            tweenable.w = endRotation.w
+            tweenable.trackingCounter+=dt
 
-            //keep syncing origin for smooth follow???
-            //TODO why does move require setting this but not rotateq?
-            //its cuz computeFaceAngle takes object itself instead of a copied var of position/rotate
-            //if(tweenable.repeatAction == 'relative'){
-              //tweenable.originQ = transform.rotation
-            //}
+            if(trackingTransform || (tweenable.targetOfInterestType == 'player' && tweenable.trackingCounter >= tweenable.trackingInterval)){
+              tweenable.trackingCounter = 0 // reset counter
+              let lookAtTarget = null;//new Vector3().copyFrom(trackingTransform.position)
+              
+              if(trackingTransform){
+                lookAtTarget = new Vector3().copyFrom(trackingTransform.position)//is copy required? flyweight for vector storage?
+              }else if(tweenable.targetOfInterestType == 'player'){
+                if(tweenable.targetOfInterest == tweenable.channel.id){
+                  //TODO add if tracking player update camera position  
+                  lookAtTarget = new Vector3().copyFrom(player.position)//is copy required? flyweight for vector storage?
+                }else{
+                  //not me must hope for a sync
+                }
+              }
+              
+              let endRotation:Quaternion = computeFaceAngle(lookAtTarget,transform,tweenable.lockMode,tweenable.lockX,tweenable.lockY,tweenable.lockZ);
+              tweenable.x = endRotation.x
+              tweenable.y = endRotation.y
+              tweenable.z = endRotation.z
+              tweenable.w = endRotation.w
+
+              //keep syncing origin for smooth follow???
+              //TODO why does move require setting this but not rotateq?
+              //its cuz computeFaceAngle takes object itself instead of a copied var of position/rotate
+              //if(tweenable.repeatAction == 'relative'){
+                //tweenable.originQ = transform.rotation
+              //}
+            }
           }
         }
         //log("rotate-q " + tweenable.transition +  " "  + tweenable.destPosition +  " " + tweenable.x +  " " + tweenable.y +  " " + tweenable.z +  " " + tweenable.w)
@@ -835,7 +859,7 @@ export class TweenSystemRotate extends TweenSystem<TweenableRotate>{
           tweenable.transition += dt * speed
 
           let easingIndex = 0;
-          if(tweenable.repeatAction == 'relative' && tweenable.trackingType && tweenable.trackingType == 'follow'){
+          if(tweenable.repeatAction == 'relative' && tweenable.trackingType && tweenable.trackingType == 'follow' && tweenable.targetOfInterestType != 'player'){
             //when doing follow should not be on a curve
             easingIndex = dt * speed
           }else{
