@@ -475,16 +475,12 @@ export class TweenSystemMove extends TweenSystem<TweenableMove>{
               //keep updating origin for smooth follow?
               //TODO why does move require setting this but not rotateq?
               if(tweenable.repeatAction == 'relative'){
-                if(!tweenable.origin || tweenable.origin !== Vector3){
+                if(!tweenable.origin || tweenable.origin === undefined || !(tweenable.origin instanceof Vector3) ){
+                  //check not needed cuz known use case is caused by sync and sync handles? leave to be safe?
                   tweenable.origin = new Vector3().copyFrom(transform.position)
-                  //tweenable.origin.copyFrom(transform.position)
-                }
-                if(trackingTransform){
+                }else{
                   tweenable.origin.copyFrom(transform.position)
                 }
-                //else if(tweenable.targetOfInterestType == 'player'){
-                //  tweenable.origin.copyFrom(player.position)//is copy required? flyweight for vector storage?
-                //}
               }
             }
             
@@ -498,9 +494,9 @@ export class TweenSystemMove extends TweenSystem<TweenableMove>{
           tweenable.transition += dt * speed
           
           let easingIndex = 0;
-          if(tweenable.repeatAction == 'relative' && tweenable.trackingType && tweenable.trackingType == 'follow' && tweenable.targetOfInterestType != 'player'){
+          if(tweenable.repeatAction == 'relative' && tweenable.trackingType && tweenable.trackingType == 'follow'){
             //when doing follow should not be on a curve
-            easingIndex = dt * speed
+            easingIndex = dt * speed //because origin is copied in each frame, we only need to lerp the delta
           }else{
             easingIndex = easingConverter(
               tweenable.transition,
@@ -530,6 +526,7 @@ export class TweenSystemMove extends TweenSystem<TweenableMove>{
                 //not me must hope for a sync
               }
             }
+
             if(tweenable.repeatAction == 'relative'){
               //log("move relative loop starting again")
               const origPos:Vector3 = tweenable.origin;
@@ -539,7 +536,7 @@ export class TweenSystemMove extends TweenSystem<TweenableMove>{
 
               //should scale relative to the diff between last orig and now
 
-              if(!tweenable.relative){
+              if(!tweenable.relative && tweenable.trackingType != 'follow'){
                 tweenable.x+=tweenable.x-origPos.x
                 tweenable.y+=tweenable.y-origPos.y
                 tweenable.z+=tweenable.z-origPos.z

@@ -17,7 +17,7 @@ import { AnimatedData, Animated, AnimType } from './animation'
 import { getEntityWorldPosition, getEntityWorldRotation } from './decentralandecsutils/helpers/helperfunctions'
 //import { movePlayerTo } from '@decentraland/RestrictedActions'
 
-const VERSION = "1.1.3-beta"
+const VERSION = "1.1.4-beta"
 const ITEM_FULL_NAME = "Toolbox-CE v." + VERSION
 
 export type Props = {
@@ -285,7 +285,7 @@ if(props.clickable){
       const METHOD_NAME = "channel.handle.sceneAddRemove"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called " + jsonStringifyActions(action) + " " + target + "/" + targets + " action " + sceneAddRemove,null)
-      if(!tween.multiplayer && action.sender != channel.id){
+      if( (tween.multiplayer !== null && tween.multiplayer !== undefined && !tween.multiplayer) && action.sender != channel.id){
         if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
         return;
       }
@@ -330,7 +330,7 @@ if(props.clickable){
       const METHOD_NAME = "channel.handle.sceneShowHide"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called " + jsonStringifyActions(action) + " " + target + "/" + targets + " action " + sceneAddRemove,null)
-      if(!tween.multiplayer && action.sender != channel.id){
+      if( (tween.multiplayer !== null && tween.multiplayer !== undefined && !tween.multiplayer) && action.sender != channel.id){
         if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
         return;
       }
@@ -368,6 +368,10 @@ if(props.clickable){
       const METHOD_NAME = "channel.handle.attachToItem"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called " + jsonStringifyActions(action) + " " + target + "/" + targets + " to " + tween.targetOfInterest + " attachOrigin:" + attachToOrigin, null)
+      if( (tween.multiplayer !== null && tween.multiplayer !== undefined && !tween.multiplayer) && action.sender != channel.id){
+        if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
+        return;
+      }
 
       const targetList = createTargetList(target, targets)
       const entityTarget = getEntityByName(tween.targetOfInterest)
@@ -380,6 +384,11 @@ if(props.clickable){
           const entityToAttach = entities[p]
           
           if (entityToAttach && entityTarget) {
+            //FIXME NOT REQUIRED for detach MUST HANDLE MISSING!!!
+            if(!entityToAttach.hasComponent(Transform)){
+              if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "entity " + targetItm + " does not have the component Transform. skipping",null)
+              continue;
+            }
             const transformParent = entityTarget.getComponent(Transform)
             const transformChild = entityToAttach.getComponent(Transform)
 
@@ -448,6 +457,10 @@ if(props.clickable){
       const METHOD_NAME = "channel.handle.detachFromItem"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + "/" + targets + " from " + tween.targetOfInterest , null)
+      if( (tween.multiplayer !== null && tween.multiplayer !== undefined && !tween.multiplayer) && action.sender != channel.id){
+        if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
+        return;
+      }
 
       const targetList = createTargetList(target, targets)
       const entityTarget = getEntityByName(tween.targetOfInterest)
@@ -459,6 +472,11 @@ if(props.clickable){
           const entityToDetach = entities[p]
           
           if (entityToDetach && entityTarget) {
+            //FIXME NOT REQUIRED for detach MUST HANDLE MISSING!!!
+            if(!entityToDetach.hasComponent(Transform)){
+              if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "entity " + targetItm + " does not have the component Transform. skipping",null)
+              continue;
+            }
             //must grab old value to put back
             let transformChild = entityToDetach.getComponent(Transform)
             let transformParent = entityTarget.getComponent(Transform)
@@ -493,6 +511,10 @@ if(props.clickable){
       const METHOD_NAME = "channel.handle.followItemPath"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + "/" + targets + "  " + " (" + tween.pathItem1 +","+ tween.pathItem2 +","+tween.pathItem3 +","+tween.pathItem4 +","+tween.pathItem5 +")" , null)
+      if( (tween.multiplayer !== null && tween.multiplayer !== undefined && !tween.multiplayer) && action.sender != channel.id){
+        if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
+        return;
+      }
 
       const sender = action.sender
 
@@ -600,7 +622,7 @@ if(props.clickable){
               entity.addComponentOrReplace(new RotateData(originQ,tween.lockX,tween.lockY,tween.lockZ,tween.lockW))
             }
             entity.addComponentOrReplace(tweenable)
-            entity.addComponentOrReplace(new Syncable())
+            addSynable(entity,tween,targetItm,logger,METHOD_NAME)
             
           }else{
             if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entity,null)
@@ -614,7 +636,11 @@ if(props.clickable){
       const METHOD_NAME = "channel.handle.tweenControlAction"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + "/" + targets + "  " + tween.controlMode + " (" + tween.tweenControlMove +","+ tween.tweenControlRotate +","+tween.tweenControlScale +")" , null)
-      
+      if( (tween.multiplayer !== null && tween.multiplayer !== undefined && !tween.multiplayer) && action.sender != channel.id){
+        if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
+        return;
+      }
+
       //TODO check to see if doing already if possible
       const targetList = createTargetList(target, targets)
       for(const p in targetList){
@@ -651,6 +677,13 @@ if(props.clickable){
       const METHOD_NAME = "channel.handle.moveToPlayer"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + action.values.target + " -> player " + action.sender , null)
+      if( (tween.multiplayer !== null && tween.multiplayer !== undefined && !tween.multiplayer) && action.sender != channel.id){
+        if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
+        return;
+      }
+
+      //logger.warn( METHOD_NAME,"HARD CODE DISABLED RIGHT NOW",null)
+      //return false;
       
       if(tween.trackingType=='follow' && tween.multiplayer){
         //warn not supported at the moment. will act like 'current'
@@ -735,6 +768,10 @@ if(props.clickable){
       const METHOD_NAME = "channel.handle.moveToItem"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + action.values.target + " -> " + action.values.targetOfInterest, null)
+      if( (tween.multiplayer !== null && tween.multiplayer !== undefined && !tween.multiplayer) && action.sender != channel.id){
+        if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
+        return;
+      }
 
       //const entityToMove = getEntityByName(target)
       const entityDest = getEntityByName(tween.targetOfInterest)
@@ -786,7 +823,10 @@ if(props.clickable){
       const METHOD_NAME = "channel.handle.faceItem"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + action.values.target + " -> " + action.values.targetOfInterest, null)
-
+      if( (tween.multiplayer !== null && tween.multiplayer !== undefined && !tween.multiplayer) && action.sender != channel.id){
+        if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
+        return;
+      }
 
       const entityLookAt = getEntityByName(tween.targetOfInterest)
       //FIXME?? add if (action.sender === channel.id) { since it chains?? or dont chain action calls and do all work here
@@ -837,6 +877,10 @@ if(props.clickable){
       const METHOD_NAME = "channel.handle.facePlayer"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + "/" + targets + "  face player " + action.sender + " vs " + channel.id, null)
+      if( (tween.multiplayer !== null && tween.multiplayer !== undefined && !tween.multiplayer) && action.sender != channel.id){
+        if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
+        return;
+      }
 
       //is sender check required?
       if (action.sender === channel.id) {
@@ -918,7 +962,10 @@ if(props.clickable){
       const METHOD_NAME = "channel.handle.move"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + jsonStringifyActions(action) + " " + target + "/" + targets + " " + tween.x + " " + tween.y + " " + tween.z, null)
-
+      if( (tween.multiplayer !== null && tween.multiplayer !== undefined && !tween.multiplayer) && action.sender != channel.id){
+        if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
+        return;
+      }
 
       const sender = action.sender
 
@@ -965,7 +1012,8 @@ if(props.clickable){
             })
             if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "adding Tweenable Component to " + targetItm + " " + jsonStringifyTweenable(tweenable),null)
             entity.addComponentOrReplace(tweenable)
-            entity.addComponentOrReplace(new Syncable())
+            addSynable(entity,tween,targetItm,logger,METHOD_NAME)
+            
           }else{
             if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entity,null)
           }
@@ -979,6 +1027,10 @@ if(props.clickable){
       const METHOD_NAME = "channel.handle.rotate-q"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + "/" + targets + tween.x + " " + tween.y + " " + tween.z + " " + tween.speed + " " + tween.curve, null)
+      if( (tween.multiplayer !== null && tween.multiplayer !== undefined && !tween.multiplayer) && action.sender != channel.id){
+        if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
+        return;
+      }
 
       const sender = action.sender
       const targetList = createTargetList(target, targets)
@@ -1024,7 +1076,7 @@ if(props.clickable){
             })
             if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "adding Tweenable Component to " + targetItm + " " + jsonStringifyTweenable(tweenable),null)
             entity.addComponentOrReplace(tweenable)
-            entity.addComponentOrReplace(new Syncable())
+            addSynable(entity,tween,targetItm,logger,METHOD_NAME)
           }else{
             if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entity,null)
           }
@@ -1038,6 +1090,10 @@ if(props.clickable){
       const METHOD_NAME = "channel.handle.rotate"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + "/" + targets + tween.x + " " + tween.y + " " + tween.z + " " + tween.speed + " " + tween.curve, null)
+      if( (tween.multiplayer !== null && tween.multiplayer !== undefined && !tween.multiplayer) && action.sender != channel.id){
+        if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
+        return;
+      }
 
       const sender = action.sender
       
@@ -1083,7 +1139,7 @@ if(props.clickable){
             })
             if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "adding Tweenable Component to " + targetItm + " " + jsonStringifyTweenable(tweenable),null)
             entity.addComponentOrReplace(tweenable)
-            entity.addComponentOrReplace(new Syncable())
+            addSynable(entity,tween,targetItm,logger,METHOD_NAME)
           }else{
             if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entity,null)
           }
@@ -1097,6 +1153,10 @@ if(props.clickable){
       const METHOD_NAME = "channel.handle.scale"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + "/" + targets + tween.x + " " + tween.y + " " + tween.z + " " + tween.speed + " " + tween.curve, null)
+      if( (tween.multiplayer !== null && tween.multiplayer !== undefined && !tween.multiplayer) && action.sender != channel.id){
+        if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
+        return;
+      }
 
       const sender = action.sender
       
@@ -1141,7 +1201,7 @@ if(props.clickable){
             })
             if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "adding Tweenable Component to " + targetItm + " " + jsonStringifyTweenable(tweenable),null)
             entity.addComponentOrReplace(tweenable)
-            entity.addComponentOrReplace(new Syncable())
+            addSynable(entity,tween,targetItm,logger,METHOD_NAME)
           }else{
             if(logger.isWarnEnabled()) logger.warn( METHOD_NAME,  "Could not find " + " " + targetItm + " " + entity,null)
           }
@@ -1155,6 +1215,11 @@ if(props.clickable){
       const METHOD_NAME = "channel.handle.animate"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + "/" + targets, null)
+      //TODO add multiplayer flag here
+      //if(!tween.multiplayer && action.sender != channel.id){
+      //  if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "called for " + " " + target + "/" + targets + " is not me " + channel.id + " so skipping" ,null)
+      //  return;
+      //}
 
       const sender = action.sender
       
@@ -1378,6 +1443,13 @@ if(props.clickable){
                   break;
                 }
               }
+              if(!tweenable.origin || tweenable.origin === undefined || !(tweenable.origin instanceof Vector3)){
+                //make sure is vector3
+                tweenable.origin = new Vector3().copyFrom(tweenable.origin)
+              }
+              else{
+                log("XXXX NOT making sure instanceof Vector3")
+              }
               //TODO sync PathData + RotationData
               entity.addComponentOrReplace(tweenable) //TODO either need to move the followCurve into tween OR sync PathData + RotateData objects too
               addSyncable = true;
@@ -1515,6 +1587,16 @@ if(props.clickable){
     })
 
     //TODO handle onStart
+  }
+}
+//TODO FIXME need a syncable per motion type or need to also check it in the tween
+//if move is multi payer but rotate is not it will try to sync all tweens making a multipler:false get shared
+function addSynable(entity:IEntity,tween:Tween,targetItm:string,logger:Logger,METHOD_NAME:string){
+  if(tween.multiplayer === null || tween.multiplayer === undefined || tween.multiplayer){//&& action.sender != channel.id
+    if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "multiplayer is enabled for this action. Assigning Syncable to " +  targetItm ,null)
+    entity.addComponentOrReplace(new Syncable())  
+  }else{
+    if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,  "multiplayer is not abled for this action. Not assigning Syncable to " +  targetItm ,null)
   }
 }
 function createTargetList(target: string, targets: any, delimiter:string = ';') {
