@@ -80,6 +80,11 @@
   ],
   "actions": [
     {
+      "id": "push",
+      "label": "Click",
+      "parameters": []
+    },
+    {
       "id": "activate",
       "label": "Activate",
       "parameters": []
