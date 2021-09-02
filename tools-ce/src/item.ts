@@ -506,8 +506,8 @@ if(props.clickable){
     
     //TODO make followVectorPath. see commit a32591b for asset.json stuff
     channel.handleAction<Tween>('followItemPath', (action) => {
-      const { target, targets , ...tween } = action.values
-
+      const { ...tween } = action.values
+      const {target,targets} = tween
       const METHOD_NAME = "channel.handle.followItemPath"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + "/" + targets + "  " + " (" + tween.pathItem1 +","+ tween.pathItem2 +","+tween.pathItem3 +","+tween.pathItem4 +","+tween.pathItem5 +")" , null)
@@ -957,8 +957,8 @@ if(props.clickable){
 
     // handle actions
     channel.handleAction<Tween>('move', (action) => {
-      const { target, targets, ...tween } = action.values
-
+      const { ...tween } = action.values
+      const {target,targets} = tween
       const METHOD_NAME = "channel.handle.move"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + jsonStringifyActions(action) + " " + target + "/" + targets + " " + tween.x + " " + tween.y + " " + tween.z, null)
@@ -1022,8 +1022,8 @@ if(props.clickable){
     })
 
     channel.handleAction<Tween>('rotate-q', (action) => {
-      const { target, targets, ...tween } = action.values
-
+      const { ...tween } = action.values
+      const {target,targets} = tween
       const METHOD_NAME = "channel.handle.rotate-q"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + "/" + targets + tween.x + " " + tween.y + " " + tween.z + " " + tween.speed + " " + tween.curve, null)
@@ -1085,8 +1085,8 @@ if(props.clickable){
     })
 
     channel.handleAction<Tween>('rotate', (action) => {
-      const { target, targets, ...tween } = action.values
-
+      const { ...tween } = action.values
+      const {target,targets} = tween
       const METHOD_NAME = "channel.handle.rotate"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + "/" + targets + tween.x + " " + tween.y + " " + tween.z + " " + tween.speed + " " + tween.curve, null)
@@ -1148,8 +1148,8 @@ if(props.clickable){
     })
 
     channel.handleAction<Tween>('scale', (action) => {
-      const { target, targets, ...tween } = action.values
-
+      const { ...tween } = action.values
+      const {target,targets} = tween
       const METHOD_NAME = "channel.handle.scale"
       if(logger.isTraceEnabled()) logger.trace( METHOD_NAME,"ENTRY",[jsonStringifyActionsFull(action)] )
       if(logger.isDebugEnabled()) logger.debug( METHOD_NAME, "called " + jsonStringifyActions(action) + " " + target + "/" + targets + tween.x + " " + tween.y + " " + tween.z + " " + tween.speed + " " + tween.curve, null)
