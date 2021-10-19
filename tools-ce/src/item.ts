@@ -1625,7 +1625,7 @@ function createTargetList(target: string, targets: any, delimiter:string = ';') 
         if(targetsItm.indexOf("$") != targetsItm.length-1) targetsItm += "$"
 
         if(!dict[targetsItm]){
-          dict[target]=new RegExp(targetsItm)
+          dict[targetsItm]=new RegExp(targetsItm)
         }else{
           if(logger.isDebugEnabled()) logger.debug( METHOD_NAME,"duplicate item found skipping " + targetsItm, null )
         }
